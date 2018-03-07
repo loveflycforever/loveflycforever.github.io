@@ -8,7 +8,7 @@ logo:               'assets/img/avt.PNG'
 background:         'assets/img/153_171122133005_5.jpg'
 tiled_bg:           true   # Set this true if you want to tile your background image, otherwise it will be covered
 locale:             en_US
-url:                https://taylantatli.github.io/Moon
+url:                https://loveflycforever.github.io
 
 # Jekyll
 permalink:          /:title/
