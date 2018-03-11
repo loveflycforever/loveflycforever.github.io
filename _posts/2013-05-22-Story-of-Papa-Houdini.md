@@ -4,7 +4,7 @@ title:  "胡蒂尼老爹传奇"
 date:   2013-05-22
 excerpt: "听一个老头的故事。"
 project: true
-tags: [传奇, 胡蒂尼老爹]
+tags: [传奇]
 feature: http://media.obsidian.net/eternity/media/wallpapers/poster-dragon/Wallpaper_PosterDragonAlt_2560x1600.jpg
 comments: true
 ---
