@@ -66,3 +66,4 @@ private static Singleton getInstance() {
     return SingletonHolder.instance;
 }
 ```
+

@@ -310,13 +310,15 @@ IE一直都不支持这个语法，而其他的浏览器都支持，可以利用
 打开PATH，添加变量值：C:\android-sdk-windows\tools
 
 **[961]** Android命令
-- android 弹出Android SDK and AVD Manager
-- android list avds 列出所有创建的Android模拟器
-- android list targets 列出所有的SDK可用版本
-- adb devices 列出所有可装载的设备
-- adb shell 进入设备的根目录
-- adb installs <AVD名称> <APK文件所在位置>
-- emulator -avd <AVD名称>
-- mksdcard 256M <d:/sdcard.img> 将在D盘下生成256M的sdcard
-- adb pull <remote> <local>/adb push <local> <remote> 取出/存放文件
-- android create avd --name <AVD名称> --target <SDK版本>
+| Header1 | Header2 |
+|:--------|--------:|
+| android   | 弹出Android SDK and AVD Manager   |
+| android list avds   | 列出所有创建的Android模拟器   |
+| android list targets   | 列出所有的SDK可用版本   |
+| adb devices   | 列出所有可装载的设备   |
+| adb shell   | 进入设备的根目录   |
+| adb installs <AVD名称> <APK文件所在位置>   |    |
+| emulator -avd <AVD名称>   |    |
+| mksdcard 256M <d:/sdcard.img>   | 将在D盘下生成256M的sdcard   |
+| adb pull <remote> <local>/adb push <local> <remote>   | 取出/存放文件   |
+| android create avd --name <AVD名称> --target <SDK版本>   |    |

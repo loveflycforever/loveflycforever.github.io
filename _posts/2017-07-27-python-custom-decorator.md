@@ -2,7 +2,7 @@
 layout: post
 title:  "Python 装饰器"
 date:   2017-07-27
-excerpt: "decorator 可以修改被装饰的对象。"
+excerpt: "修改被装饰的对象。"
 tags: [Python, 设计模式, 装饰器, decorator]
 feature: https://www.python.org/static/img/python-logo-large.png?1414305901
 comments: true

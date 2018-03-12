@@ -97,4 +97,3 @@ Server = http://repo.msys2.org/mingw/i686
 Server = http://downloads.sourceforge.net/project/msys2/REPOS/MINGW/i686
 Server = http://www2.futureware.at/~nickoe/msys2-mirror/i686/
 ```
-

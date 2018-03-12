@@ -6,7 +6,6 @@ excerpt: "保持心态"
 tags: [Java, JDBC, 封装]
 comments: true
 ---
-
 ``` java
 import java.sql.Connection;
 import java.sql.DriverManager;

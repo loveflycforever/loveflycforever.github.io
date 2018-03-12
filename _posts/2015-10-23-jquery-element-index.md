@@ -36,7 +36,6 @@ comments: true
 </html>
 ```
 
-
 错误写法：
 ``` javascript
 $("#text div").click(function() {
@@ -53,7 +52,6 @@ $("#text div").click(function() {
 	alert(index);
 });
 ```
-
 
 原因：对于elsement.index()产生误解，以为$(this)就是当前元素，而index()就可以获得它在同辈元素中的索引号，然而，必须先指定这个元素原先所在的集合，才可以获得这个元素的索引。
 
