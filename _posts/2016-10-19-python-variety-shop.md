@@ -4,7 +4,7 @@ title:  "Python 杂货店"
 date:   2016-10-19
 excerpt: "记录一点。"
 project: true
-tags: [杂货]
+tags: [Python, 杂货]
 feature: https://pypi.python.org/static/images/python-logo.png
 comments: true
 ---
@@ -16,5 +16,10 @@ class AbstractClass:
     def abstractMethod(self): 
     	raise NotImplementedError  
 ```
-不过用户依然可以实例化 AbstractClass。
+不过依然可以实例化 AbstractClass。
+
+[003] 定义1个元素的元组（tuple）
+``` python
+t = (1,) 
+```
 
