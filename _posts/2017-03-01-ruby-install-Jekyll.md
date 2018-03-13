@@ -52,8 +52,17 @@ MSYS2是一个用于Windows的软件发行版和构建平台。
 
 `jekyll server`
 
+可能模板目录中的Gemfile文件Jekyll版本信息不符，注意修改。
+
 ---
-### 给 MSYS2 添加国内的源
+---
+### 【Extra 001】给 RubyGems 添加国内的源
+
+执行`gem sources --add https://gems.ruby-china.org/ --remove https://rubygems.org/`命令
+
+然后使用`gem sources -l`命令，确保只有`gems.ruby-china.org`存在。
+
+### 【Extra 002】给 MSYS2 添加国内的源
 
 修改 msys64\etc\pacman.d 目录下三个文件。 
 #### mirrorlist.msys 
