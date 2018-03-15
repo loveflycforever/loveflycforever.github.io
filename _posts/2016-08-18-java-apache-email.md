@@ -2,7 +2,6 @@
 layout: post
 title:  "使用 Apache Email 发送邮件"
 date:   2016-08-18
-excerpt: "茴的四种写法"
 tags: [Java, Apache Email]
 comments: true
 ---

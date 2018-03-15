@@ -475,7 +475,7 @@ Query OK, 0 rows affected (0.00 sec)
 |...|...|
 {: rules="groups"}
  
-表示插件使用 archetype 元数据从本地获取，默认为 remote，即从中央仓库获取。
+表示插件使用 archetype 元数据从本地获取，默认为 remote，local，即从中央仓库获取，指定internal来表示仅使用内部元数据。
 
 **[938]** Java 泛型中的标记符含义
 
@@ -498,3 +498,7 @@ Query OK, 0 rows affected (0.00 sec)
 Eclipse默认把这些受访问限制的API设成了ERROR。
 
 Windows---Preferences---Java Complicer---Errors/Warnings---Deprecated and restricted API，将其中的Forbidden references(access rules)设置为Warning。
+
+**[935]** Eclipse 在启动发生 An internal error occurred during: "Initializing Java Tooling" 错误
+
+删除workspace\.metadata\.plugins\org.eclipse.core.resources\.projects目录，之后重启Eclipse即可。
