@@ -502,3 +502,59 @@ Windows---Preferences---Java Complicer---Errors/Warnings---Deprecated and restri
 **[935]** Eclipse 在启动发生 An internal error occurred during: "Initializing Java Tooling" 错误
 
 删除workspace\.metadata\.plugins\org.eclipse.core.resources\.projects目录，之后重启Eclipse即可。
+
+**[934]** Java Object 方法
+
+`clone(), equals(), hashCode(), toString(), notify(), notifyAll(), wait(), finalize(), getClass()`
+
+**[933]** 《Java虚拟机规范》
+
+> “虽然定义了boolean这种数据类型，但是只对它提供了非常有限的支持。在Java虚拟机中没有任何供boolean值专用的字节码指令，Java语言表达式所操作的boolean值，在编译之后都使用Java虚拟机中的int数据类型(4 bytes)来代替，而boolean数组将会被编码成Java虚拟机的byte数组，每个元素boolean元素占8位(1 bytes)”。
+
+这样可以得出boolean类型单独使用是4个字节，在数组中又是1个字节。
+
+**[932]** TreeMap, LinkedHashMap, HashMap的区别
+- HashMap的底层实现是散列表，内部的元素是无序的；
+- TreeMap的底层实现是红黑树，内部的元素的有序的。排序的依据是自然序或者是创建TreeMap时所提供的比较器（Comparator）对象。
+- LinkedHashMap，能够记住插入元素的顺序的HashMap。
+
+**[931]** 只有两种情况finally块中的语句不会被执行
+- 调用了System.exit()方法
+- JVM崩溃
+
+因此，如果try语句块中包含return语句，finally语句块会执行。
+
+**[930]** 异常
+- Throwable类，基类
+- Error类，无法控制的内部错误
+- Exception类，异常
+- RuntimeException及其子类，未检查异常（如NPE，应该避免未检查异常的发生）
+- IOException及其子类，已检查异常（编译器会检查，若没有则会报错）
+
+**[929]** 静态内部类与非静态内部类的区别
+
+静态内部类不会持有外部类的引用，而非静态内部类会隐式持有外部类的引用。
+
+**[928]** volatile关键字，可以使 Java Memory Model 保证对同一个 volatile 关键字定义的变量的写操作 happens-before（先行发生）对它的读操作。
+
+**[927]** ReentrantLock，支持两种获取锁的方式，一种是公平模型，一种是非公平模型。
+- 公平锁模型，初始化时，state=0，表示无人抢占锁；线程A取得了锁，把state原子性+1，这时候state被改为1，A线程继续执行其他任务，然后线程B请求锁，无法获取，生成节点（初始化的时候，会生成一个空的头节点，然后才是B线程节点）进行排队；当A再次请求锁时，就相当于是有特权的，这时候state再次+1（就是一个线程在获取了锁之后，再次去获取了同一个锁，这时候仅仅是把状态值进行累加。如果线程A释放了一次锁，仅仅是把状态值减了，只有线程A把此锁全部释放了，状态值减到0了，其他线程才有机会获取锁）；当一个线程节点被唤醒然后取得了锁，对应节点会从队列中删除。
+- 非公平模型，即当线程A执行完之后，要唤醒线程B是需要时间的，而且线程B醒来后还要再次竞争锁，所以如果在切换过程当中，来了一个线程C，那么线程C是有可能获取到锁的，如果C获取到了锁，B就只能继续乖乖休眠了。
+
+**[926]** Java 四种引用类型，代表了 JVM 回收内存的四种强度
+- 强引用，`Object o = new Object();`，可以直接访问目标对象，所指向的对象在任何时候都不会被系统回收（JVM宁愿抛出OOM异常，也不会回收强引用所指向的对象，可能导致内存泄漏，在使用完成之后可以把对象设置为null，集合的话可以使用Collection.clear()）。
+- 软引用，`SoftReference<Object> softRef = new SoftReference<Object>(o);`，如果内存空间不足，就会回收这些对象的内存。只要垃圾回收器没有回收它，该对象就可以被程序使用。软引用可用来实现内存敏感的高速缓存。  
+- 弱引用，`WeakReference<Object> weakRef = new WeakReference<Object>(o);`，垃圾回收器线程不管当前内存空间足够与否，都会回收它的内存。由于垃圾回收器是一个优先级很低的线程，因此发现弱引用的对象不会很快。用于对象偶尔使用，并希望随时能获取，但又不想影响此对象的垃圾收集。
+- 虚引用，`ReferenceQueue<Object> rq = new ReferenceQueue<Object>(); PhantomReference<Object> phantomRef = new PhantomReference<Object>(o, rq);`，无法通过虚引用来获取对一个对象的真实引用，唯一的用处，能在对象被GC时收到系统通知。
+
+**[925]** ThreadLocal 的作用是提供线程内的局部变量，在多线程环境下访问时能保证各个线程内的 ThreadLocal 变量各自独立。
+
+**[924]** CountDownLatch 允许线程集等待直到计数器为0。适用场景，当一个或多个线程需要等待指定数目的事件发生后再继续执行。
+
+**[923]** 使用for-each循环与常规的for循环在有些场合下能带来微小的性能提升，因为它只计算一次数组索引的上限。
+
+**[922]** 为了克服函数式接口的这种脆弱性并且能够明确声明接口作为函数式接口的意图，Java 8增加了一种特殊的注解@FunctionalInterface（Java 8中所有类库的已有接口都添加了@FunctionalInterface注解）。
+
+**[921]** 哈希表是由数组和链表组成，具有较快（常量级）的查询速度，及相对较快的增删速度，所以很适合在海量数据的环境中使用。
+
+**[920]** 由于 Hashtable 是采用 synchronized 进行同步，相当于所有线程进行读写时都去竞争一把锁，导致效率非常低下。ConcurrentHashMap 可以做到读取数据不加锁，并且其内部的结构可以让其在进行写操作的时候能够将锁的粒度保持地尽量地小，不用对整个 ConcurrentHashMap 加锁。
