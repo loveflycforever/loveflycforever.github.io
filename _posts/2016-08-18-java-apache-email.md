@@ -5,7 +5,7 @@ date:   2016-08-18
 tags: [Java, Apache Email]
 comments: true
 ---
-QQ 邮箱需要开启邮箱的 POP3/SMTP 服务或者 IMAP/SMTP 服务，开通成功将会给予一个识别码，这个识别码将是你使用程序发送邮件登陆的的通行证。
+QQ 邮箱需要开启邮箱的 POP3/SMTP 服务或者 IMAP/SMTP 服务，开通成功将会给予一个识别码，这个识别码将是您使用程序发送邮件登陆的的通行证。
 
 QQ 邮箱的 POP3 和 SMTP 服务器地址
 
