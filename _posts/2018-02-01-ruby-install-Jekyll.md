@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "如何安装 Jekyll"
-date:   2017-03-01
+date:   2018-02-01
 excerpt: "用于GitHub博客"
 tags: [Ruby, Jekyll, 安装]
 feature: https://jekyllrb.com/img/logo-2x.png
