@@ -106,3 +106,23 @@ Server = http://repo.msys2.org/mingw/i686
 Server = http://downloads.sourceforge.net/project/msys2/REPOS/MINGW/i686
 Server = http://www2.futureware.at/~nickoe/msys2-mirror/i686/
 ```
+
+### 【Extra 003】
+
+> RubyInstaller，在Windows上安装Ruby的简单方法
+> - https://rubyinstaller.org/
+
+> Ruby 社区的 Gem 托管服务
+> - https://rubygems.org/
+
+> MSYS2 installer，一个用于Windows的软件发行和搭建平台
+> - http://www.msys2.org/
+
+> RubyGems 镜像
+> - https://gems.ruby-china.org/
+
+> Jekyll，一个简单的免费的Blog生成工具
+> - https://jekyllrb.com/
+
+> Jekyll 模板
+> - http://jekyllthemes.org/
