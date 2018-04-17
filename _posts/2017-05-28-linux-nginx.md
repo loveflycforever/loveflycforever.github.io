@@ -49,6 +49,32 @@ nginx有一个主进程和几个工作进程。主进程的主要目的是读取
 
 `~# vim /etc/nginx/nginx.conf`
 
+```
+server {
+    listen 7128;
+
+    location / {
+        proxy_pass http://www.baidu.com; # 代理跳转，访问localhost:7128
+    }
+
+    # 本机物理地址/srv/data/zz.html，访问地址为localhost:7128/data/zz.html
+    location /data/ {
+        root /srv; 
+    }
+    
+    # 本机物理地址/srv/data/zx.html，访问地址为localhost:7128/zx.html
+    location /zx.html {
+       root /srv/data; 
+    } 
+    
+    # 有问题
+    # 本机物理地址/srv/data/下的所有以.html或.htm后缀的文件，访问地址为localhost:7128/zx.html
+    location ~ \.(html|htm)$ {
+        root /srv/data;
+    }
+}
+```
+
 nginx由配置文件中指定的指令控制的模块组成。指令分为简单指令和块指令。简单指令由用空格分隔的名称和参数组成，并以分号( ; )结尾。 块指令与简单指令具有相同的结构，但不是以分号结尾，而是以大括号( { 和 } )包围的一组附加指令结束。如果块指令可以在大括号内包含其他指令，则它被称为上下文(例如：events, http, server, 和 location)。
 
 放置在配置文件中的并且在所有上下文之外的指令被认为是处于 main 上下文中。 events 和 http 指令处于在 main 上下文中，server 处于 http 上下文中, location 处于 server 上下文中。
@@ -57,21 +83,21 @@ nginx由配置文件中指定的指令控制的模块组成。指令分为简单
 
 ### nginx 命令行
 
-- nginx -s stop 
+- `nginx -s stop`
 
 快速关机
 
-- nginx -s quit
+- `nginx -s quit`
 
 优雅关机，等待工作进程完成当前请求才停止nginx进程。
 
-- nginx -s reload 
+- `nginx -s reload`
 
 重新加载配置文件
 
 主进程收到重新加载配置的信号后，会检查新配置文件的语法有效性，并尝试应用其中提供的配置。如果成功，主进程启动新的工作进程并将消息发送给旧工作进程，请求它们关闭。否则，主进程将回滚更改并继续使用旧配置。旧工作进程接收关闭的命令，停止接受新的连接并继续服务当前的请求，直到所有这样的请求服务完成。在此之后，旧工作进程退出。
 
-- nginx -s reopen
+- `nginx -s reopen`
 
 重新打开日志文件
 
