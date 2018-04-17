@@ -1,4 +1,4 @@
----
+﻿---
 layout: post
 title:  "Python 杂货店"
 date:   2016-10-19
@@ -23,3 +23,11 @@ class AbstractClass:
 t = (1,) 
 ```
 
+**[003]** 应用 PIL 类库
+- `pip install PIL --allow-external PIL --allow-unverified PIL`，此方法无效。
+- `pip install Pillow`，Pillow由PIL而来，所以该导入该库并使用`import PIL`。
+
+**[004]** pip 的安装
+1. 下载`get-pip.py`
+> https://bootstrap.pypa.io/get-pip.py
+2. 执行`python get-pip.py`
