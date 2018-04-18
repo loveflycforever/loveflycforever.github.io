@@ -558,3 +558,28 @@ Windows---Preferences---Java Complicer---Errors/Warnings---Deprecated and restri
 **[921]** 哈希表是由数组和链表组成，具有较快（常量级）的查询速度，及相对较快的增删速度，所以很适合在海量数据的环境中使用。
 
 **[920]** 由于 Hashtable 是采用 synchronized 进行同步，相当于所有线程进行读写时都去竞争一把锁，导致效率非常低下。ConcurrentHashMap 可以做到读取数据不加锁，并且其内部的结构可以让其在进行写操作的时候能够将锁的粒度保持地尽量地小，不用对整个 ConcurrentHashMap 加锁。
+
+**[919]** 编写工具类的规范
+- 将类定义为`final class`
+- 只定义一个无参的构造函数且抛出断言错误，防止被反射调用
+``` java
+private Objects() {
+    throw new AssertionError("No java.util.Objects instances for you!");
+}
+````
+- 方法都是静态方法
+- 静态方法中只抛出未检查异常
+
+**[918]** 获取 HashCode 值
+``` java
+int hashCode = Objects.hashCode(s1); // 根据 内容 来产生 hash 值
+int identityHashCode = System.identityHashCode(s1); // 根据 内存地址 来产生 hash 值
+``` 
+
+**[917]** 实时获取有性能问题的 SQL 
+```
+SELECT id,user,host,DB,command,time,state,info
+FROM information_schema.processlist
+WHERE time >= 60;
+```
+查询当前服务器执行超过 60s 的SQL，可以通过脚本周期性的来执行，查出有问题的 SQL。
