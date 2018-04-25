@@ -11,7 +11,7 @@ comments: true
 
 基于
 
-> Linux debian 4.9.0-4amd64
+> Linux debian 4.9.0-4-amd64 #1 SMP Debian 4.9.65-3+deb9u1 (2017-12-23) x86_64 GNU/Linux
 
 1. 下载的软件存放位置`/var/cache/apt/archives`
 2. 安装后软件位置`/usr/share`
