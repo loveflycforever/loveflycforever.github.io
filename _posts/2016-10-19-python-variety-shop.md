@@ -55,9 +55,14 @@ numbers = [1, 2, 3]
 d = {number: number * 9 for number in numbers}
 ```
 
-**[]** 用 fromkeys 方法将列表转换成字典
+**[009]** 用 fromkeys 方法将列表转换成字典
 ``` python
 keys = [1, 2, 3]
 value = []
 d = dict.fromkeys(keys, value)
 ```
+
+**[010]** 用 defaultdict 初始化字典对象
+
+
+**[011]** 用 setdefault 为字典中不存在的 key 设置缺省值

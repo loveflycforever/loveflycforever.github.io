@@ -535,9 +535,9 @@ Windows---Preferences---Java Complicer---Errors/Warnings---Deprecated and restri
 
 静态内部类不会持有外部类的引用，而非静态内部类会隐式持有外部类的引用。
 
-**[928]** volatile关键字，可以使 Java Memory Model 保证对同一个 volatile 关键字定义的变量的写操作 happens-before（先行发生）对它的读操作。
+**[928]** `volatile`关键字，可以使 Java Memory Model 保证对同一个 volatile 关键字定义的变量的写操作 happens-before（先行发生）对它的读操作。
 
-**[927]** ReentrantLock，支持两种获取锁的方式，一种是公平模型，一种是非公平模型。
+**[927]** `ReentrantLock`，支持两种获取锁的方式，一种是公平模型，一种是非公平模型。
 - 公平锁模型，初始化时，state=0，表示无人抢占锁；线程A取得了锁，把state原子性+1，这时候state被改为1，A线程继续执行其他任务，然后线程B请求锁，无法获取，生成节点（初始化的时候，会生成一个空的头节点，然后才是B线程节点）进行排队；当A再次请求锁时，就相当于是有特权的，这时候state再次+1（就是一个线程在获取了锁之后，再次去获取了同一个锁，这时候仅仅是把状态值进行累加。如果线程A释放了一次锁，仅仅是把状态值减了，只有线程A把此锁全部释放了，状态值减到0了，其他线程才有机会获取锁）；当一个线程节点被唤醒然后取得了锁，对应节点会从队列中删除。
 - 非公平模型，即当线程A执行完之后，要唤醒线程B是需要时间的，而且线程B醒来后还要再次竞争锁，所以如果在切换过程当中，来了一个线程C，那么线程C是有可能获取到锁的，如果C获取到了锁，B就只能继续乖乖休眠了。
 
@@ -547,17 +547,17 @@ Windows---Preferences---Java Complicer---Errors/Warnings---Deprecated and restri
 - 弱引用，`WeakReference<Object> weakRef = new WeakReference<Object>(o);`，垃圾回收器线程不管当前内存空间足够与否，都会回收它的内存。由于垃圾回收器是一个优先级很低的线程，因此发现弱引用的对象不会很快。用于对象偶尔使用，并希望随时能获取，但又不想影响此对象的垃圾收集。
 - 虚引用，`ReferenceQueue<Object> rq = new ReferenceQueue<Object>(); PhantomReference<Object> phantomRef = new PhantomReference<Object>(o, rq);`，无法通过虚引用来获取对一个对象的真实引用，唯一的用处，能在对象被GC时收到系统通知。
 
-**[925]** ThreadLocal 的作用是提供线程内的局部变量，在多线程环境下访问时能保证各个线程内的 ThreadLocal 变量各自独立。
+**[925]** `ThreadLocal`的作用是提供线程内的局部变量，在多线程环境下访问时能保证各个线程内的`ThreadLocal`变量各自独立。
 
-**[924]** CountDownLatch 允许线程集等待直到计数器为0。适用场景，当一个或多个线程需要等待指定数目的事件发生后再继续执行。
+**[924]** `CountDownLatch`允许线程集等待直到计数器为0。适用场景，当一个或多个线程需要等待指定数目的事件发生后再继续执行。
 
-**[923]** 使用for-each循环与常规的for循环在有些场合下能带来微小的性能提升，因为它只计算一次数组索引的上限。
+**[923]** 使用`for-each`循环与常规的`for`循环在有些场合下能带来微小的性能提升，因为它只计算一次数组索引的上限。
 
 **[922]** 为了克服函数式接口的这种脆弱性并且能够明确声明接口作为函数式接口的意图，Java 8增加了一种特殊的注解@FunctionalInterface（Java 8中所有类库的已有接口都添加了@FunctionalInterface注解）。
 
 **[921]** 哈希表是由数组和链表组成，具有较快（常量级）的查询速度，及相对较快的增删速度，所以很适合在海量数据的环境中使用。
 
-**[920]** 由于 Hashtable 是采用 synchronized 进行同步，相当于所有线程进行读写时都去竞争一把锁，导致效率非常低下。ConcurrentHashMap 可以做到读取数据不加锁，并且其内部的结构可以让其在进行写操作的时候能够将锁的粒度保持地尽量地小，不用对整个 ConcurrentHashMap 加锁。
+**[920]** 由于`Hashtable`是采用`synchronized`进行同步，相当于所有线程进行读写时都去竞争一把锁，导致效率非常低下。`ConcurrentHashMap`可以做到读取数据不加锁，并且其内部的结构可以让其在进行写操作的时候能够将锁的粒度保持地尽量地小，不用对整个`ConcurrentHashMap`加锁。
 
 **[919]** 编写工具类的规范
 - 将类定义为`final class`
