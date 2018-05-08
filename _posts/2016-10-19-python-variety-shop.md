@@ -62,7 +62,50 @@ value = []
 d = dict.fromkeys(keys, value)
 ```
 
-**[010]** 用 defaultdict 初始化字典对象
+**[010]** 用 collections 模块中的 defaultdict 初始化字典对象
+```
+>>> from collections import defaultdict
+>>> dd = defaultdict(list)
+>>> dd
+defaultdict(<type 'list'>, {})
+```
+defaultdict 类的初始化函数接受一个类型作为参数，当所访问的键不存在的时候，可以实例化一个值作为默认值。
+```
+>>> from collections import defaultdict
+>>> def zero(): return 0
+>>> dd = defaultdict(zero) # dd = defaultdict(lambda: 0) 
+>>> dd
+defaultdict(<function zero at 0xb7ed2684>, {})
+>>> dd['foo']
+0
+>>> dd
+defaultdict(<function zero at 0xb7ed2684>, {'foo': 0})
+```
+除了接受类型名称作为初始化函数的参数之外，还可以使用任何不带参数的可调用函数，到时该函数的返回结果作为默认值。
+
+默认值只有在通过`dict[key]`或者`dict.__getitem__(key)`访问的时候才有效。因为从2.5版本开始，如果派生自dict的子类定义了`__missing__()`方法，当访问不存在的键时，`dict[key]`会调用`__missing__()`方法取得默认值。
 
 
 **[011]** 用 setdefault 为字典中不存在的 key 设置缺省值
+- 如果 key 存在于字典中，那么直接返回对应的值，等效于 get 方法
+- 如果 key 不存在字典中，则会用 setdefault 中的第二个参数作为该 key 的值，再返回该值。
+
+**[012]** 可变数据类型作为函数定义中的默认参数时，当编写函数时，这个可变数据类型被实例化为函数定义的一部分。
+```
+def fn(var1, var2=[]): 
+    var2.append(var1) 
+    print var2 
+fn(3) # 目标输出 [3] 实际输出 [3]  
+fn(4) # 目标输出 [4] 实际输出 [3, 4]  
+fn(5) # 目标输出 [5] 实际输出 [3, 4, 5]  
+```
+当函数运行时，可变数据类型并不是每次都被实例化。
+```
+def fn(var1, var2=None): 
+    if not var2: 
+        var2 = [] 
+    var2.append(var1) 
+```
+注意，对于不可变数据类型，比如元组、字符串、整型，是不需要考虑这种情况的。
+
+**[013]** 可变数据类型：列表list和字典dict；不可变数据类型：整型int、浮点型float、字符串型string和元组tuple。

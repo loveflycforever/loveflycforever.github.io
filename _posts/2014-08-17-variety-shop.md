@@ -489,7 +489,7 @@ Query OK, 0 rows affected (0.00 sec)
 
 - N - Number（数值类型）
 
-- ？ -  表示不确定的java类型
+- ? -  表示不确定的java类型
 
 **[937]** `getDeclaredField()`可以获取一个类的所有字段，`getField()`只能获取类的 public 字段。
 
