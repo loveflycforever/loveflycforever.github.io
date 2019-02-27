@@ -714,4 +714,15 @@ $ ls -li
 - (fixedDelay = 5000) 上一个任务结束后间隔5秒执行下一个任务。
 - (fixedRate = 5000) 每个5秒的任务都会执行。
 
-**[890]** 
+**[890]** 在使用 Spring 的 @Cacheable 注解的时候，要注意，如果 类A 的 方法f1() 被标注了 @Cacheable 注解，那么当 类A 的其他方法，例如方法 f2() 去直接调用f1()的时候，@Cacheable 是不起作用的，原因是 @Cacheable 是基于 Spring AOP 代理类，f2() 属于内部方法，直接调用 f1() 时，是不通过代理的。
+
+**[889]** 解决 Lambda 表达式的 tomap方法 空指针问题
+```
+Map<Integer, String> locMap = abList.parallelStream().collect(HashMap::new, (m, v) -> m.put(v.getA(), v.getB()), Map::putAll);
+```
+
+**[888]** 对所有的编程语言，最后的目的其实就是两种：提高硬件的运行效率和提高程序员的开发效率。
+
+C语言已经把硬件的运行效率压缩到了极致。
+
+但是这种设计思想带来的问题就是易用性和安全性的缺失。
