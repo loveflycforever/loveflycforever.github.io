@@ -3,6 +3,6 @@
 ## 写点啥
 * 希望自己天不怕，地不怕
 
-## 别人的 Moon
+## 别人的 Beautiful Jekyll
 
-See a [live version of Moon](http://taylantatli.github.io/Moon) hosted on GitHub.
+See a [live version of Beautiful Jekyll](https://github.com/daattali/beautiful-jekyll) hosted on GitHub.
