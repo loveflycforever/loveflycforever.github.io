@@ -17,7 +17,7 @@ QQ 邮箱的 POP3 和 SMTP 服务器地址
 
 SMTP服务器需要身份认证。
 
-```java
+``` java
 SimpleEmail simpleEmail = new SimpleEmail();
 simpleEmail.setHostName("smtp.qq.com");
 simpleEmail.setAuthentication("3*******8", "g**************i");

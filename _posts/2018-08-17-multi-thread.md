@@ -86,7 +86,7 @@ JVM对于自旋周期的选择，可能是50或者100次循环后就放弃，直
 JDK6中`-XX:PreBlockSpin=10`为自旋次数；JDK7后，去掉此参数，由JVM控制。
 
 示例
-```java
+``` java
 public class Test implements Runnable {
     static int sum;
     private SpinLock lock;
@@ -280,7 +280,7 @@ JDK5，`java.util.concurrent.atomic`包提供了`int`和`long`类型的原子操
 异步任务可以放在多线程中处理，但使用Executor框架比直接创建线程处理任务有很多好处，比如设置任务开始时间，取消任务队列，控制任务队列执行策略等，而且使用Executors可以很容易地创建线程池。
 
 Executors是一个工厂类，可以方便的创建各种类型Executor或线程池。
-```java
+``` java
 Executor executor = Executors.newSingleThreadExecutor();  
 ```
 
@@ -292,7 +292,7 @@ Executor executor = Executors.newSingleThreadExecutor();
 Executor有个缺点，一旦任务提交，就无法获得任务的执行情况，也无法停止，除非等待所有任务执行完毕或强制关闭JVM。
 
 ExecutorService扩展了Executor接口，加入了生命周期管理。
-```java
+``` java
 ExecutorService pool = Executors.newFixedThreadPool(pool_size);
 ```
 
@@ -301,7 +301,7 @@ ExecutorService可以在运行时关闭，关闭后ExecutorService就停止接�
 - 如果调用shutdownNow()方法，ExecutorService会取消所有等待的任务并尝试停止正在执行的任务。
 
 ScheduledExecutorService扩展了ExecutorService接口，可以延迟或间期执行任务。
-```java
+``` java
 ScheduledExecutorService scheduleService = Executors.newScheduledThreadPool(pool_size);
 ```
 - schedule(command, delay, TimeUnit): 任务延迟delay时间后执行
@@ -311,7 +311,7 @@ ScheduledExecutorService scheduleService = Executors.newScheduledThreadPool(pool
 Executor主要由三部分组成：任务产生部分，任务处理部分，结果获取部分。（设计模式：生产者与消费者模式）
 
 通过Future接口获取任务的结果
-```java
+``` java
 ExecutorService pool = Executors.newFixedThreadPool(3);
 //CompletionService接口内部维护一个结果队列:一堆future....
 CompletionService<Integer> cs = new ExecutorCompletionService<>(pool);
@@ -350,7 +350,7 @@ JDK7提供了7个阻塞队列
 **[011]** 什么是Callable和Future?
 
 Callable接口类似于Runnable，但是Runnable不会返回结果，并且无法抛出返回结果的异常，而Callable功能更强大一些，被线程执行后，可以返回值，这个返回值可以被Future拿到。
-```java
+``` java
 Callable<Integer> callable = new Callable<Integer>() {
     public Integer call() throws Exception {
         return new Random().nextInt(100);
@@ -361,7 +361,7 @@ new Thread(future).start();
 future.get()
 ```
 或者
-```java
+``` java
 ExecutorService threadPool = Executors.newSingleThreadExecutor();
 Future<Integer> future = threadPool.submit(new Callable<Integer>() {
     public Integer call() throws Exception {
@@ -371,7 +371,7 @@ Future<Integer> future = threadPool.submit(new Callable<Integer>() {
 future.get()
 ```
 多返回
-```java
+``` java
 ExecutorService threadPool = Executors.newCachedThreadPool();
 CompletionService<Integer> cs = new ExecutorCompletionService<Integer>(threadPool);
 for(int i = 1; i < 5; i++) {
@@ -608,7 +608,7 @@ OnDeck线程获取到锁资源后会变为Owner线程，而没有得到锁资源
 synchronized是非公平锁。synchronized在线程进入ContentionList时，等待的线程会先尝试自旋获取锁，如果获取不到就进入ContentionList，这明显对于已经进入队列的线程是不公平的，还有一个不公平的事情就是自旋获取锁的线程还可能直接抢占OnDeck线程的锁资源。
 
 区别一，使用方式
-```java
+``` java
 // synchronized的使用
 public synchronized void test() {}
 synchronized（Object） {}
@@ -642,7 +642,7 @@ Semaphore是一个线程同步的辅助类，可以维护当前访问自身的�
 
 单个信号量的Semaphore对象可以实现互斥锁的功能，并且可以是由一个线程获得了“锁”，再由另一个线程释放“锁”，这可应用于死锁恢复的一些场合。
 
-```java
+``` java
 ExecutorService service = Executors.newCachedThreadPool();
 final  Semaphore sp = new Semaphore(3); // 创建Semaphore信号量，初始化许可大小为3
 Runnable runnable = new Runnable(){
@@ -670,7 +670,7 @@ public interface Lock {
 
 当使用Lock时，获取锁和释放锁都是主动调用执行的，而synchronized则是系统自动释放锁的。
 
-```java
+``` java
 Lock lock = new ReentrantLock(); // 可重入锁（Lock的一种实现）
 lock.lock();
 try{
@@ -729,7 +729,7 @@ segmentShift与segmentMask都是在构造过程中根据concurrency level被相�
 ReadWriteLock解决了这个问题，当写操作时，其他线程无法读取或写入数据，而当读操作时，其它线程无法写入数据，但却可以读取数据 。
 
 ReentrantReadWriteLock与ReentrantLock彼此之间没有继承或实现的关系，是单独的实现。
-```java
+``` java
 private ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
 rwl.readLock().lock(); // 上读锁，其他线程只能读不能写
 rwl.readLock().unlock(); // 释放读锁，最好放在finnaly里面
@@ -767,7 +767,7 @@ CountDownLatch方法
 - public void countDown() {} // 将count值减1
 
 
-```java
+``` java
 public class countDownlatchTest {
     public static void main(String[] args) throws InterruptedException {
         CountDownLatch countDownLatch = new CountDownLatch(5);
@@ -800,7 +800,7 @@ CyclicBarrier方法
 - public int await() throws InterruptedException, BrokenBarrierException {} // 挂起当前线程，直至所有线程都到达barrier状态再同时执行后续任务；
 - public int await(long timeout, TimeUnit unit)throws InterruptedException,BrokenBarrierException,TimeoutException {} // 让这些线程等待至一定的时间，如果还有线程没有到达barrier状态就直接让到达barrier的线程执行后续任务
 
-```java
+``` java
 public class cyclicBarrierTest {
     public static void main(String[] args) throws InterruptedException {
         CyclicBarrier cyclicBarrier = new CyclicBarrier(5, new Runnable() {
@@ -849,7 +849,7 @@ Java锁和同步器框架的核心AQS（AbstractQueuedSynchronizer），就是�
 LockSupport类似于二元信号量（只有1个许可证可供使用），如果这个许可还没有被占用，当前线程获取许可并继续执行；如果许可已经被占用，当前线程阻塞，等待获取许可。
 
 LockSupport是可不重入的，如果一个线程连续2次调用LockSupport.park()，那么该线程一定会一直阻塞下去。
-```java
+``` java
 public static void main(String[] args) {
      LockSupport.park();
      System.out.println("block.");
@@ -876,7 +876,7 @@ Condition定义了等待/通知两种类型的方法，当前线程调用这些�
 
 Condition对象是由Lock对象（调用Lock对象的newCondition()方法）创建出来的，Condition是依赖Lock对象的。
 
-```java
+``` java
 Lock lock = new ReentrantLock();
 Condition condition = lock.newCondition();
 lock.lock();
@@ -1146,7 +1146,7 @@ synchronized关键字是防止多个线程同时执行一段代码，那么就�
 - 对变量的写操作不依赖于当前值
 - 该变量没有包含在具有其他变量的不变式中
 
-```java
+``` java
 //线程1:
 context = loadContext(); // 语句1
 volatile inited = true; // 语句2，因为当执行到语句2时，必定能保证context已经初始化完毕

@@ -286,7 +286,7 @@ relative(相对定位):
 3. 如果父级设置了position或者padding属性后，则此DIV会根据父DIV去定位。而且有“撑开或占据高度”的作用。
 
 **[964]** CSS 中!important的用法
-```css
+``` css
 #main {
     width:100px!important;
     width:10px;
@@ -351,11 +351,11 @@ double a = 0.1 * 0.1; // 0.010000000000000002
 - 放在变量前，先用原来的值进行其他操作，然后在对自己做修改。
 - 放在变量后，先对自己做修改，再用修改后的值进行其他操作。
 
-```java
+``` java
 b = a++-1; // b = a-1; a = a+1;
 ```
 
-```java
+``` java
 b = ++a-1; // a = a+1; b = a-1;
 ```
 
@@ -421,7 +421,7 @@ private Object readResolve() throws ObjectStreamException {
 **[945]** Java中的实例变量、静态变量、静态方法、private方法，都是静态绑定的。
 
 **[944]** MySQL 事件（EVENT），七天删除一次数据
-```sql
+``` sql
 -- 先查看event是否已经开启
 SHOW VARIABLES LIKE 'event_scheduler';
 -- 若event是OFF状态，则开启event
@@ -437,17 +437,17 @@ SELECT * FROM mysql.event;
 ```
 
 **[943]** MySQL 将时间戳格式化
-```sql
+``` sql
 DATE_FORMAT(FROM_UNIXTIME(insert_timestamp/1000), '%Y%m%d') 
 ```
 
 **[942]** MySQL 添加索引
-```sql
+``` sql
 ALTER TABLE answer_record ADD INDEX userIdKey(userId)
 ```
 
 **[941]** MySQL 语句优化
-```sql
+``` sql
 EXPLAIN
 SELECT * FROM answer_record AS t1
 inner join (SELECT * FROM answer_record WHERE endtime>0) t2 
@@ -458,7 +458,7 @@ on t1.userId = t2.userId
 
 权限问题导致的，需要授权给 root 账号所有 sql 权限
 
-```sql
+``` sql
 mysql> grant all privileges on *.* to root@"%" identified by ".";
 Query OK, 0 rows affected (0.00 sec)
 
@@ -577,7 +577,7 @@ int identityHashCode = System.identityHashCode(s1); // 根据 内存地址 来�
 ``` 
 
 **[917]** 实时获取有性能问题的 SQL 
-```
+``` sql
 SELECT id,user,host,DB,command,time,state,info
 FROM information_schema.processlist
 WHERE time >= 60;
@@ -646,12 +646,12 @@ ACK 携带两个信息。
 - 在HTTP/2中，每个请求都可以带一个31bit的优先值，0表示最高优先级， 数值越大优先级越低。有了这个优先值，客户端和服务器就可以在处理不同的流时采取不同的策略，以最优的方式发送流、消息和帧。
 
 **[906]** “软链接”和“硬链接”的区别
-```
+``` shell
 $ ln myfile hard
 $ ls -li
 ```
 - 硬链接： 与普通文件没什么不同，inode 都指向同一个文件在硬盘中的区块
-```
+``` shell
 $ ln -s myfile soft
 $ ls -li
 ```
@@ -717,7 +717,7 @@ $ ls -li
 **[890]** 在使用 Spring 的 @Cacheable 注解的时候，要注意，如果 类A 的 方法f1() 被标注了 @Cacheable 注解，那么当 类A 的其他方法，例如方法 f2() 去直接调用f1()的时候，@Cacheable 是不起作用的，原因是 @Cacheable 是基于 Spring AOP 代理类，f2() 属于内部方法，直接调用 f1() 时，是不通过代理的。
 
 **[889]** 解决 Lambda 表达式的 tomap方法 空指针问题
-```
+``` java
 Map<Integer, String> locMap = abList.parallelStream().collect(HashMap::new, (m, v) -> m.put(v.getA(), v.getB()), Map::putAll);
 ```
 

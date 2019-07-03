@@ -34,7 +34,7 @@ comments: true
 accept() 调用不应该在主 Activity UI 线程中进行，因为它是个阻塞线程，会妨碍应用中其他的交互。通常在一个新线程中做 BluetoothServerSocket 或 BluetoothSocket 的所有工作来避免线程阻塞。如果需要放弃阻塞线程，可以调用 close() 方法。
 
 下面是一个服务器组件接受连接的线程示例。
-```java
+``` java
 //定义接受线程
 private class AcceptThread extends Thread {
 	//创建BluetoothServerSocket类
@@ -97,7 +97,7 @@ private class AcceptThread extends Thread {
 **注意 要确保在调用 connect() 时没有同时做设备搜索，如果在搜索设备，该连接尝试会显著变慢，容易导致连接失败。**
 
 下面是一个发起 Bluetooth 连接的线程示例。
-```java
+``` java
 //定义Bluetooth连接线程
 private class ConnectThread extends Thread {
 	//新建BluetoothSocket类
@@ -155,7 +155,7 @@ private class ConnectThread extends Thread {
 
 当然，要注意一些实现细节。比如，需要用一个专门的线程来实现流的读写，因为方法read(byte[])和write(byte[])都是阻塞调用。read(byte[])会阻塞，直到流中有数据可读。write(byte[])虽然通常不会阻塞，但是如果远程设备调用read(byte[])不够快而导致中间缓冲区满，它也可能阻塞。所以线程中的主循环应该用于读取InputStream。线程中也应该有单独的方法用来完成写OutputStream。
 请看下面的示例：
-```java
+``` java
 //连接管理线程
 private class ConnectThread extends Thread {
 	//新建BluetoothSocket类

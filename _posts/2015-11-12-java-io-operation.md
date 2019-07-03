@@ -16,7 +16,7 @@ comments: true
 - 缓冲，BufferedWriter 和 BufferedReader
 
 ##### 字节流的读取写入
-```java
+``` java
 FileInputStream i = null;
 FileOutputStream o = null;
 try {
@@ -36,7 +36,7 @@ try {
 }
 ```
 
-```java
+``` java
 BufferedInputStream bi = null;
 BufferedOutputStream bo = null;
 try {
@@ -55,7 +55,7 @@ try {
 }
 ```
 ##### 字符流的读取写入
-```java
+``` java
 FileReader r = null;
 FileWriter w = null;
 try {
@@ -73,7 +73,7 @@ try {
 }
 ```
 
-```java
+``` java
 BufferedReader br = null;
 BufferedWriter bw = null;
 try {

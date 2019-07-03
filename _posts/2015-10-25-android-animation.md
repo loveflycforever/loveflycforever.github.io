@@ -9,7 +9,7 @@ comments: true
 
 通常在Android项目的res/drawable/目录下面定义逐帧动画的XML模板文件。编码的时候，需要在动画模板文件的<animation-list>标签中依次放入需要播放的图片，并设置好播放的间隔时间。
 
-```
+``` xml
 <animation-list
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	android:oneshot="false">
@@ -24,7 +24,7 @@ comments: true
 
 举例：(ImageView元素的id为m_image_view，上面的动画模板文件名为m_frame_animation)
 
-```java
+``` java
 public class MainActivity extends Activity {
 
 	AnimationDrawable mAnimationDrawable;	
@@ -66,7 +66,7 @@ public class MainActivity extends Activity {
 
 补间动画的效果同样可以使用XML语言来定义，这些动画模板文件通常会被放在Android项目的res/anim/目录下。
 
-```
+``` xml
 <set xmlns:android="http://schemas.android.com/apk/res/android"
 	android:interpolator="@android:anim/decelerate_interpolator">
 	<!-- 在1000ms（1秒）时间内，从透明度0（完全透明）变成1（不透明），同时由该元素中心位置从大小为0.1（十分之一）变成1（正常） -->
@@ -88,7 +88,7 @@ public class MainActivity extends Activity {
 
 举例：(ImageView元素的id为m_image_view，上面的动画模板文件名为m_tween_animation)
 
-```
+``` java
 public class MainActivity extends Activity {
 
 	@Override
