@@ -741,3 +741,99 @@ System.getProperty("sun.arch.data.model");
 - 短信验证码不可直接记录到日志文件。
 - 发送短信验证码之前，先验证图形验证码是否正确（可选）。
 - 集成第三方 API 做登录保护（可选）。
+
+**[885]** SQL 行数据转为列数据，列数据转为行数据
+``` sql
+# 行转列
+SELECT * FROM table_name
+PIVOT (
+    SUM(column_key1) FOR column_key2 IN (column_value1, column_value2, column_value3)
+)
+
+# 列转行
+SELECT * FROM table_name
+UNPIVOT (
+    column_key1 FOR column_key2 IN (column_value1, column_value2, column_value3)
+)
+```
+但是`PIVOT`和`UNPIVOT`只在 Oracle 与 SQL Server 起作用。
+
+在 MySQL 中行转列可以通过子查询与`case when`判断或者IF聚合函数实现，列转行可以通过UNION操作符实现。
+
+**[884]** 数据库连接数设置大小，由PostgreSQL提供，`连接数 = ((核心数 * 2) + 有效磁盘数)`。
+
+**[883]** 注意，在sql语句的 or 条件后面补充的 and 条件，可能会执行出预期之外的的结果！！！
+
+**[882]** COUNT 的不同方式的比较。
+
+COUNT(主键ID) InnoDB遍历全表，把每一行的主键值都取出来返回给MySQL的Server层，因为主键不可能为NULL，Server层直接按行累加最后返回累计值给客户端。
+
+COUNT(1) 遍历全表但不取值，Server层对返回的每一行放个数字"1"进去，按行累加。COUNT(1)比COUNT(主键)快，因为不需要取值，减少了数据传输。
+
+COUNT(字段) 遍历全表，一行行从记录中读出字段值给Server层，Server层判断值不为NULL了再累加。
+
+COUNT(*) MySQL专门做了优化，会找到表中最小的索引树，InnoDB普通索引树比主键索引小很多，对于COUNT(*)遍历哪个树是一样的，count(*)时MySQL不取记录值，count(*)也肯定不为NULL，Server层中直接按行累加。
+       
+所以这个版本COUNT的从低到高分别为：COUNT(字段) < COUNT(主键) < COUNT(1) ≈ COUNT(*)
+
+**[881]** 椭圆曲线ECC，目前最难加密，但是速度慢。
+
+**[880]** Lombok 的用法
+
+@Singular 注解，不需要new 列表
+
+private List<String> favorites;
+
+@Wither 链式写法，比@Builder，with() 返回的对象并不是原来的对象，而是一个新对象
+
+Accessors，访问器模式，是给一个普通的Bean增加一个便捷的访问器，包括读和写。
+
+它有两种工作模式，fluent和chain，使用属性同名字符串代替了getter和setter。
+
+**[879]** 反射调用 default 方法
+``` java
+      Hello object = (Hello) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),new Class[]{Hello.class}, (Object proxy, Method method, Object[] arguments) -> null);
+      Method method = Hello.class.getMethod("hello");
+      Class<?> declaringClass = method.getDeclaringClass();
+
+      Constructor<MethodHandles.Lookup> constructor = MethodHandles.Lookup.class.getDeclaredConstructor(Class.class, int.class);
+      constructor.setAccessible(true);
+      MethodHandles.Lookup lookup = constructor.newInstance(declaringClass, -1);
+      Object result = lookup
+              .unreflectSpecial(method, declaringClass)
+              .bindTo(object)
+              .invokeWithArguments(args);
+
+```
+**[878]** 迪米特法则（Law of Demeter）又叫作最少知识原则（Least Knowledge Principle 简写LKP）
+
+就是说一个对象应当对其他对象有尽可能少的了解,不和陌生人说话。英文简写为: LoD.
+          
+迪米特法则的初衷在于降低类之间的耦合。由于每个类尽量减少对其他类的依赖，因此，很容易使得系统的功能模块功能独立，相互之间不存在（或很少有）依赖关系。
+
+**[877]** ASM字节码增强技术主要是用来反射的时候提升性能的，如果单纯用jdk的反射调用，性能是非常低下的，而使用字节码增强技术后反射调用的时间已经基本可以与直接调用相当了。
+
+**[876]** CPU标高的一般处理步骤
+- top查找出哪个进程消耗的cpu高
+- top –H –p查找出哪个线程消耗的cpu高
+- 记录消耗cpu最高的几个线程
+- printf %x 进行pid的进制转换
+- jstack记录进程的堆栈信息
+- 找出消耗cpu最高的线程信息
+
+**[875]** 内存标高（OOM）一般处理步骤
+- jstat命令查看FGC发生的次数和消耗的时间，次数越多，耗时越长说明存在问题；
+- 连续查看jmap –heap 查看老生代的占用情况，变化越大说明程序存在问题；
+- 使用连续的jmap –histo:live 命令导出文件，比对加载对象的差异，差异部分一般是发生问题的地方。
+
+**[]** 捕捉线程或者线程组对象的异常
+
+方法一，设置UncaughtExceptionHandler成员变量
+```
+Thread t = new Thread(r);
+t.setUncaughtExceptionHandler(
+    (t1, e) -> LOGGER.error(t1 + " throws exception: " + e)
+);
+return t;
+```
+方法二，重写线程池的`afterExecute`方法。
