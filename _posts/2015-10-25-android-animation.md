@@ -1,7 +1,6 @@
 ---
 layout: post
 title:  "实现逐帧动画和补间动画两种动画效果"
-date:   2015-10-25
 tags: [Android]
 comments: true
 ---

@@ -1,10 +1,9 @@
 ---
 layout: post
 title:  "如何在 Windows 环境下安装并运行 Jekyll 服务"
-date:   2018-02-01
-excerpt: "基于 GitHub 博客的部署的实践记录"
+subtitle: "基于 GitHub 博客的部署的实践记录"
 tags: [GitHub, Ruby, Jekyll, 安装]
-feature: https://jekyllrb.com/img/logo-2x.png
+bigimg: https://jekyllrb.com/img/logo-2x.png
 comments: true
 ---
 ### 下载 Ruby

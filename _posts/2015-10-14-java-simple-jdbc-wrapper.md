@@ -1,8 +1,7 @@
 ---
 layout: post
 title:  "简单的 JDBC 封装"
-date:   2015-10-14
-excerpt: "保持心态"
+subtitle: "保持心态"
 tags: [Java, JDBC, 封装]
 comments: true
 ---

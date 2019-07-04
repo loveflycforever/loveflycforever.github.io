@@ -1,7 +1,6 @@
 ---
 layout: post
 title:  "定义自己的WebBindingInitializer"
-date:   2016-11-24
 tags: [Spring]
 comments: true
 ---

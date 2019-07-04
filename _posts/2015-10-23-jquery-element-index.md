@@ -1,8 +1,7 @@
 ---
 layout: post
 title:  "JQuery 获取元素索引值"
-date:   2015-10-23
-excerpt: "一种错误，一种正确。"
+subtitle: "一种错误，一种正确。"
 tags: [JQuery]
 comments: true
 ---

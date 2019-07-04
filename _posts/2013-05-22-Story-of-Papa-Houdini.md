@@ -1,11 +1,10 @@
 ﻿---
 layout: post
 title:  "胡蒂尼老爹传奇"
-date:   2013-05-22
-excerpt: "听一个老头的故事。"
+subtitle: "听一个老头的故事。"
 project: true
 tags: [传奇]
-feature: http://media.obsidian.net/eternity/media/wallpapers/poster-dragon/Wallpaper_PosterDragonAlt_2560x1600.jpg
+bigimg: http://media.obsidian.net/eternity/media/wallpapers/poster-dragon/Wallpaper_PosterDragonAlt_2560x1600.jpg
 comments: true
 ---
 “话说，我们现在所见到的这个世界又怎么是这个样子的呢？”

@@ -1,8 +1,7 @@
 ---
 layout: post
 title:  "Markdown Syntax"
-date:   1970-01-01
-excerpt: "Just about everything you'll need to style in the theme: headings, paragraphs, blockquotes, tables, code blocks, and more."
+subtitle: "Just about everything you'll need to style in the theme: headings, paragraphs, blockquotes, tables, code blocks, and more."
 tag:
 - markdown 
 - syntax

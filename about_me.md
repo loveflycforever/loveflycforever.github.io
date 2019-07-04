@@ -2,7 +2,6 @@
 layout: page
 title: 关于我
 subtitle: 关于, loveflycforever, 微小, 事迹
-date: 2018-03-03
 comments: false
 ---
 

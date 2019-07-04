@@ -1,10 +1,9 @@
 ---
 layout: post
 title:  "程序员考试"
-date:   2014-11-11
-excerpt: "笔记"
+subtitle: "笔记"
 tags: [考试]
-feature: https://gss0.bdstatic.com/-4o3dSag_xI4khGkpoWK1HF6hhy/baike/w%3D268%3Bg%3D0/sign=3919d42f94ef76c6d0d2fc2da52d9ac7/2f738bd4b31c87017d4fb4e8237f9e2f0608ffc7.jpg
+bigimg: https://gss0.bdstatic.com/-4o3dSag_xI4khGkpoWK1HF6hhy/baike/w%3D268%3Bg%3D0/sign=3919d42f94ef76c6d0d2fc2da52d9ac7/2f738bd4b31c87017d4fb4e8237f9e2f0608ffc7.jpg
 comments: true
 ---
 1.CPU执行指令的三个阶段：取指令——分析指令——执行指令

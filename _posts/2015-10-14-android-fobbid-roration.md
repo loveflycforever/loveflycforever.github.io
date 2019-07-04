@@ -1,7 +1,6 @@
 ---
 layout: post
 title:  "禁止屏幕旋转并同时解决以至于导致 Activity 重启的方法"
-date:   2015-10-14
 tags: [Android]
 comments: true
 ---

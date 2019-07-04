@@ -1,11 +1,10 @@
 ---
 layout: post
 title:  "杂货店"
-date:   2014-08-17
-excerpt: "来来往往，想到就记录一点。"
+subtitle: "来来往往，想到就记录一点。"
 project: true
 tags: [杂货]
-feature: https://upload.wikimedia.org/wikipedia/commons/4/48/Window_shopping_in_Cowbridge_-_geograph.org.uk_-_1770681.jpg
+bigimg: https://upload.wikimedia.org/wikipedia/commons/4/48/Window_shopping_in_Cowbridge_-_geograph.org.uk_-_1770681.jpg
 comments: true
 ---
 **[999]** Windows 系统批量修改文件名

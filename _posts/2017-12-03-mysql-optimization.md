@@ -1,10 +1,9 @@
 ---
 layout: post
 title:  "MySQL优化"
-date:   2017-12-03
-excerpt: "查看并优化MySQL的一些方法"
+subtitle: "查看并优化MySQL的一些方法"
 tags: [MySQL]
-feature: https://labs.mysql.com/common/logos/mysql-logo.svg?v2
+bigimg: https://labs.mysql.com/common/logos/mysql-logo.svg?v2
 comments: true
 ---
 1. 用`EXPLAIN`查看SQL执行计划

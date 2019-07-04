@@ -1,8 +1,7 @@
 ---
 layout: post
 title:  "Java 单例"
-date:   2016-08-09
-excerpt: "茴的四种写法"
+subtitle: "茴的四种写法"
 tags: [Java, 设计模式, 单例, singleton]
 comments: true
 ---

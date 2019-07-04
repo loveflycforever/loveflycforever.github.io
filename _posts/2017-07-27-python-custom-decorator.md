@@ -1,10 +1,9 @@
 ---
 layout: post
 title:  "Python 装饰器"
-date:   2017-07-27
-excerpt: "修改被装饰的对象。"
+subtitle: "修改被装饰的对象。"
 tags: [Python, 设计模式, 装饰器, decorator]
-feature: https://www.python.org/static/img/python-logo-large.png?1414305901
+bigimg: https://www.python.org/static/img/python-logo-large.png?1414305901
 comments: true
 ---
 装饰器，是一个函数，接受一个函数(或者类)作为参数，返回值也是也是一个函数(或者类)。

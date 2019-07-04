@@ -1,8 +1,7 @@
 ---
 layout: post
 title:  "Java 基础知识"
-date:   2018-08-16
-excerpt: "为了面试 Part 1：Java 基础知识"
+subtitle: "为了面试 Part 1：Java 基础知识"
 tags: [面试]
 comments: true
 ---

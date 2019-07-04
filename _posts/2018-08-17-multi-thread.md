@@ -1,8 +1,7 @@
 ---
 layout: post
 title:  "面试整理 多线程"
-date:   2018-02-14
-excerpt: "面试整理 多线程"
+subtitle: "面试整理 多线程"
 tags: ['面试']
 comments: true
 ---

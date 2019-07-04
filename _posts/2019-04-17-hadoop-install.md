@@ -1,8 +1,7 @@
 ---
 layout: post
 title:  "hadoop install"
-date:   2019-04-17
-excerpt: "hadoop install"
+subtitle: "hadoop install"
 tags: [hadoop install]
 comments: true
 ---

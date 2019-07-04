@@ -1,7 +1,6 @@
 ---
 layout: post
 title:  "让振动器振动起来—— Vibrator 的使用"
-date:   2015-10-23
 tags: [Android]
 comments: true
 ---

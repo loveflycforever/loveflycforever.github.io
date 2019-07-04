@@ -1,7 +1,6 @@
 ---
 layout: post
 title:  "进行蓝牙连接的两种方式"
-date:   2015-10-25
 tags: [Android]
 comments: true
 ---

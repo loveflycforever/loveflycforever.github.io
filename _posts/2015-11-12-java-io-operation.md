@@ -1,7 +1,6 @@
 ---
 layout: post
 title:  "Java IO 操作"
-date:   2015-11-12
 tags: [Java, IO]
 comments: true
 ---

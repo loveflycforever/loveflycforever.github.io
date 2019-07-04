@@ -1,11 +1,10 @@
 ﻿---
 layout: post
 title:  "Python 杂货店"
-date:   2016-10-19
-excerpt: "记录一点。"
+subtitle: "记录一点。"
 project: true
 tags: [Python, 杂货]
-feature: https://pypi.python.org/static/images/python-logo.png
+bigimg: https://pypi.python.org/static/images/python-logo.png
 comments: true
 ---
 **[001]** Python 没有类似 public / protected / private 的访问控制，如果要表示“私有”，习惯是加双下划线前缀。

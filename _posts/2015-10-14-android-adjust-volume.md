@@ -1,7 +1,6 @@
 ---
 layout: post
 title:  "调节音量的各个方法——AudioManager的使用"
-date:   2015-10-14
 tags: [Android]
 comments: true
 ---

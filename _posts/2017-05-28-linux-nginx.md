@@ -1,10 +1,9 @@
 ﻿---
 layout: post
 title:  "配置nginx以实现负载均衡"
-date:   2017-05-28
-excerpt: "Linux nginx。"
+subtitle: "Linux nginx。"
 tags: [Linux, nginx]
-feature: 
+bigimg: http://nginx.org/nginx.png
 comments: true
 ---
 > `uname -a`
