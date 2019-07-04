@@ -24,7 +24,7 @@ navbar-links:
 #  Resources:
 #    - Beautiful Jekyll: "http://deanattali.com/beautiful-jekyll/"
 #    - Learn markdown: "http://www.markdowntutorial.com/"
-  '@': "https://loveflycforever.github.io"
+  '@': "https://loveflycforever.github.io/tags/"
   100件小事: "100_cases"
 
 # Image to show in the navigation bar - image must be a square (width = height)
