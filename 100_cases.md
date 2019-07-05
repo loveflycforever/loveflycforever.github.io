@@ -1,7 +1,6 @@
 ---
 layout: page
 title: 100件小事
-date: 520-13-14
 comments: false
 ---
 > 宝贝，你知道吗？
