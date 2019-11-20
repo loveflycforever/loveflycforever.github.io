@@ -1,0 +1,62 @@
+配置项
+设置USERS_VERIFY_EMAIL = True，以便为注册用户启用电子邮件验证。
+
+当创建一个新的User对象时，将其is_active字段设置为False，生成一个激活密钥，并将一封电子邮件发送给包含链接的用户，以激活该帐户:
+USERS_VERIFY_EMAIL = False
+
+在单击激活链接后，将激活新帐户(即is_active字段设置为True);在此之后，用户可以登录。可选地，您可以在成功激活后自动登录用户:
+USERS_AUTO_LOGIN_ON_ACTIVATION = True
+
+这是用户在注册后激活账号的天数:
+USERS_EMAIL_CONFIRMATION_TIMEOUT_DAYS = 3
+
+在syncdb后自动创建django superuser，默认情况下此选项在DEBUG = True时启用。
+通过重写USERS_SUPERUSER_EMAIL和USERS_SUPERUSER_PASSWORD设置(强烈推荐)，您可以定制邮件/密码:
+
+USERS_CREATE_SUPERUSER = settings.DEBUG
+USERS_SUPERUSER_EMAIL =“superuser@djangoproject.com”
+django USERS_SUPERUSER_PASSWORD = ' '
+
+通过启用隐藏的(使用css)蜜罐字段，防止垃圾邮件程序自动注册:
+
+USERS_SPAM_PROTECTION = True
+
+通过设置USERS_REGISTRATION_OPEN = False阻止用户注册。
+
+USERS_REGISTRATION_OPEN = True
+
+验证器的设置，检查用户指定密码的强度:
+
+#指定密码的最小长度:
+USERS_PASSWORD_MIN_LENGTH = 5
+#指定密码的最大长度:
+USERS_PASSWORD_MAX_LENGTH =None
+
+可选地，复杂性验证器，检查密码强度:
+
+USERS_CHECK_PASSWORD_COMPLEXITY = True
+
+指定密码必须包含的各种集合中的字符数:
+
+USERS_PASSWORD_POLICY = {
+        'UPPER': 0,       # Uppercase 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        'LOWER': 0,       # Lowercase 'abcdefghijklmnopqrstuvwxyz'
+        'DIGITS': 0,      # Digits '0123456789'
+        'PUNCTUATION': 0  # Punctuation """!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~"""
+}
+
+允许/不允许注册使用特定领域的电子邮件地址:
+
+USERS_VALIDATE_EMAIL_DOMAIN = True
+
+不允许域列表:
+
+USERS_EMAIL_DOMAINS_BLACKLIST =[]
+
+例如，users_email_domains_黑名单=[' mailinator.com ']将阻止所有访问者使用mailinator.com电子邮件地址进行注册。
+
+允许域名列表:
+
+USERS_EMAIL_DOMAINS_WHITELIST =[]
+
+例如，USERS_EMAIL_DOMAINS_WHITELIST =[' ljworld.com ']只允许用户注册ljworld.com域。

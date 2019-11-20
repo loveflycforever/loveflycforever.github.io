@@ -1,0 +1,537 @@
+数据量大了，特别是有几亿条数据的时候，5~10s
+第一次搜索的时候，是 5~10s，后面就快了，可能就几百毫秒。
+
+杀手锏：Filesystem Cache
+
+ES 里写的数据，实际上都写到磁盘文件里去了，查询的时候，操作系统会将磁盘文件里的数据自动缓存到 Filesystem Cache 里面去。
+
+ES 的搜索引擎严重依赖于底层的 Filesystem Cache，如果给 Filesystem Cache 更多的内存，尽量让内存可以容纳所有的 IDX Segment File 索引数据文件，那么你搜索的时候就基本都是走内存的，性能会非常高。
+
+要让 ES 性能好，就是你的机器的内存，至少可以容纳你的总数据量的一半。
+
+生产环境实践经验的情况下，是仅仅在 ES 中就存少量的数据，就是你要用来搜索的那些索引，如果内存留给 Filesystem Cache 的是 100G，那么你就将索引数据控制在 100G 以内。
+
+比如说你现在有一行数据：id，name，age .... 30 个字段。但是你现在搜索，只需要根据 id，name，age 三个字段来搜索。
+
+如果你傻乎乎往 ES 里写入一行数据所有的字段，就会导致说 90% 的数据是不用来搜索的。
+
+然后你可以把其他的字段数据存在 MySQL/HBase 里，我们一般是建议用 ES + HBase 这么一个架构。
+
+HBase 的特点是适用于海量数据的在线存储，就是对 HBase 可以写入海量数据，但是不要做复杂的搜索，做很简单的一些根据 id 或者范围进行查询的这么一个操作就可以了。
+
+
+数据预热、冷热分离
+
+Document 模型设计：先在 Java 系统里就完成关联，将关联好的数据直接写入 ES 中。搜索的时候，就不需要利用 ES 的搜索语法来完成 Join 之类的关联搜索了。比如ES 里面的 join/nested/parent-child 搜索都要尽量避免，性能都很差的。
+
+
+分页性能优化：假如你每页是 10 条数据，你现在要查询第 100 页，实际上是会把每个 Shard 上存储的前 1000 条数据都查到一个协调节点上。翻页的时候，翻的越深，每个 Shard 返回的数据就越多，而且协调节点处理的时间越长，非常坑爹。所以用 ES 做分页的时候，你会发现越翻到后面，就越是慢。
+
+初始化时必须指定 Scroll 参数，告诉 ES 要保存此次搜索的上下文多长时间。你需要确保用户不会持续不断翻页翻几个小时，否则可能因为超时而失败。
+
+除了用 Scroll API，你也可以用 search_after 来做。search_after 的思想是使用前一页的结果来帮助检索下一页的数据。
+
+显然，这种方式也不允许你随意翻页，你只能一页页往后翻。初始化时，需要使用一个唯一值的字段作为 Sort 字段。
+
+
+
+
+
+
+=============================================================================================================================
+
+
+
+
+
+
+
+
+
+Redission 
+
+通过它的 API 中的 Lock 和 Unlock 即可完成分布式锁
+
+Redisson 所有指令都通过 Lua 脚本执行，Redis 支持 Lua 脚本原子性执行。
+Redisson 设置一个 Key 的默认过期时间为 30s，如果某个客户端持有一个锁超过了 30s ，有一个 Watchdog 的概念，它会在你获取锁之后，每隔 10s 帮你把 Key 的超时时间设为 30s。这样的话，就算一直持有锁也不会出现 Key 过期了，其他线程获取到锁的问题了。
+
+Redisson 的“看门狗”逻辑保证了没有死锁发生。(如果机器宕机了，看门狗也就没了。此时就不会延长 Key 的过期时间，到了 30s 之后就会自动过期了，其他线程可以获取到锁)
+
+Redis 的设计定位决定了它的数据并不是强一致性的，在某些极端情况下，可能会出现问题。锁的模型不够健壮。
+Redis 分布式锁，其实需要自己不断去尝试获取锁，比较消耗性能。
+
+重要的一点， Redis 的性能很高，可以支撑高并发的获取、释放锁操作。
+
+使用 Zookeeper 也可以实现分布式锁。
+
+ZK 是一种提供配置管理、分布式协同以及命名的中心化服务。
+特性：
+
+有序节点：假如当前有一个父节点为 /lock，我们可以在这个父节点下面创建子节点，ZK 提供了一个可选的有序特性。
+例如我们可以创建子节点“/lock/node-”并且指明有序，那么 ZK 在生成子节点时会根据当前的子节点数量自动添加整数序号。
+
+也就是说，如果是***个创建的子节点，那么生成的子节点为 /lock/node-0000000000，下一个节点则为 /lock/node-0000000001，依次类推。
+
+临时节点：客户端可以建立一个临时节点，在会话结束或者会话超时后，ZK 会自动删除该节点。
+事件监听：在读取数据时，我们可以同时对节点设置事件监听，当节点数据或结构变化时，ZK 会通知客户端。
+
+
+ZK 有如下四种事件：
+
+节点创建
+节点删除
+节点数据修改
+子节点变更
+
+
+使用 ZK 实现分布式锁的落地方案：
+
+使用 ZK 的临时节点和有序节点，每个线程获取锁就是在 ZK 创建一个临时有序的节点，比如在 /lock/ 目录下。
+创建节点成功后，获取 /lock 目录下的所有临时节点，再判断当前线程创建的节点是否是所有的节点的序号最小的节点。
+如果当前线程创建的节点是所有节点序号最小的节点，则认为获取锁成功。
+如果当前线程创建的节点不是所有节点序号最小的节点，则对节点序号的前一个节点添加一个事件监听。
+
+
+比如当前线程获取到的节点序号为 /lock/003，然后所有的节点列表为[/lock/001，/lock/002，/lock/003]，则对 /lock/002 这个节点添加一个事件监听器。
+
+如果锁释放了，会唤醒下一个序号的节点，然后重新执行第 3 步，判断是否自己的节点序号是最小。
+
+比如 /lock/001 释放了，/lock/002 监听到时间，此时节点集合为[/lock/002，/lock/003]，则 /lock/002 为最小序号节点，获取到锁。
+
+
+Curator 是一个 ZK 的开源客户端，提供了分布式锁的实现。
+InterProcessMutex interProcessMutex = new InterProcessMutex(client,"/anyLock"); 
+interProcessMutex.acquire(); 
+interProcessMutex.release(); 
+
+
+ZK 分布式锁而言:
+
+ZK 天生设计定位就是分布式协调，强一致性。锁的模型健壮、简单易用、适合做分布式锁。
+如果获取不到锁，只需要添加一个监听器就可以了，不用一直轮询，性能消耗较小
+
+缺点：如果有较多的客户端频繁的申请加锁、释放锁，对于 ZK 集群的压力会比较大。
+
+
+
+
+削峰、解耦
+
+
+RPC 是一种技术思想而非一种规范或协议，常见 RPC 技术和框架有：
+
+应用级的服务框架：阿里的 Dubbo/Dubbox、Google gRPC、Spring Boot/Spring Cloud。
+远程通信协议：RMI、Socket、SOAP(HTTP XML)、REST(HTTP JSON)。
+通信框架：MINA 和 Netty。
+
+
+目前流行的开源 RPC 框架还是比较多的，有阿里巴巴的 Dubbo、Facebook 的 Thrift、Google 的 gRPC、Twitter 的 Finagle 等。
+
+gRPC：是 Google 公布的开源软件，基于***的 HTTP 2.0 协议，并支持常见的众多编程语言。RPC 框架是基于 HTTP 协议实现的，底层使用到了 Netty 框架的支持。
+Thrift：是 Facebook 的开源 RPC 框架，主要是一个跨语言的服务开发框架。
+用户只要在其之上进行二次开发就行，应用对于底层的 RPC 通讯等都是透明的。不过这个对于用户来说需要学习特定领域语言这个特性，还是有一定成本的。
+
+Dubbo：是阿里集团开源的一个极为出名的 RPC 框架，在很多互联网公司和企业应用中广泛使用。协议和序列化框架都可以插拔是极其鲜明的特色。
+
+
+在一个典型 RPC 的使用场景中，包含了服务发现、负载、容错、网络传输、序列化等组件，其中“RPC 协议”就指明了程序如何进行网络传输和序列化。
+
+核心 RPC 框架的重要组成：
+
+客户端(Client)：服务调用方。
+客户端存根(Client Stub)：存放服务端地址信息，将客户端的请求参数数据信息打包成网络消息，再通过网络传输发送给服务端。
+服务端存根(Server Stub)：接收客户端发送过来的请求消息并进行解包，然后再调用本地服务进行处理。
+服务端(Server)：服务的真正提供者。
+Network Service：底层传输，可以是 TCP 或 HTTP。
+
+
+一次 RPC 调用流程如下：
+
+服务消费者(Client 客户端)通过本地调用的方式调用服务。
+客户端存根(Client Stub)接收到调用请求后负责将方法、入参等信息序列化(组装)成能够进行网络传输的消息体。
+客户端存根(Client Stub)找到远程的服务地址，并且将消息通过网络发送给服务端。
+服务端存根(Server Stub)收到消息后进行解码(反序列化操作)。
+服务端存根(Server Stub)根据解码结果调用本地的服务进行相关处理
+服务端(Server)本地服务业务处理。
+处理结果返回给服务端存根(Server Stub)。
+服务端存根(Server Stub)序列化结果。
+服务端存根(Server Stub)将结果通过网络发送至消费方。
+客户端存根(Client Stub)接收到消息，并进行解码(反序列化)。
+服务消费方得到最终结果。
+
+
+
+实现一个 RPC，最简单的方式要实现三个技术点，分别是：
+
+服务寻址
+数据流的序列化和反序列化
+网络传输
+
+
+服务寻址
+
+服务寻址可以使用 Call ID 映射。在本地调用中，函数体是直接通过函数指针来指定的，但是在远程调用中，函数指针是不行的，因为两个进程的地址空间是完全不一样的。
+所以在 RPC 中，所有的函数都必须有自己的一个 ID。这个 ID 在所有进程中都是唯一确定的。客户端在做远程过程调用时，必须附上这个 ID。然后我们还需要在客户端和服务端分别维护一个函数和Call ID的对应表。当客户端需要进行远程调用时，它就查一下这个表，找出相应的 Call ID，然后把它传给服务端，服务端也通过查表，来确定客户端需要调用的函数，然后执行相应函数的代码。
+
+实现方式：服务注册中心。
+要调用服务，首先你需要一个服务注册中心去查询对方服务都有哪些实例。Dubbo 的服务注册中心是可以配置的，官方推荐使用 Zookeeper。
+实现案例：RMI(Remote Method Invocation，远程方法调用)也就是 RPC 本身的实现方式。
+Registry(服务发现)：借助 JNDI 发布并调用了 RMI 服务。实际上，JNDI 就是一个注册表，服务端将服务对象放入到注册表中，客户端从注册表中获取服务对象。
+RMI 服务在服务端实现之后需要注册到 RMI Server 上，然后客户端从指定的 RMI 地址上 Lookup 服务，调用该服务对应的方法即可完成远程方法调用。
+Registry 是个很重要的功能，当服务端开发完服务之后，要对外暴露，如果没有服务注册，则客户端是无从调用的，即使服务端的服务就在那里。
+
+序列化和反序列化
+需要客户端把参数先转成一个字节流，传给服务端后，再把字节流转成自己能读取的格式。
+只有二进制数据才能在网络中传输，序列化和反序列化的定义是：
+将对象转换成二进制流的过程叫做序列化
+将二进制流转换成对象的过程叫做反序列化
+
+网络传输
+网络传输：远程调用往往用在网络上，客户端和服务端是通过网络连接的。
+所有的数据都需要通过网络传输，因此就需要有一个网络传输层。网络传输层需要把 Call ID 和序列化后的参数字节流传给服务端，然后再把序列化后的调用结果传回客户端。
+尽管大部分 RPC 框架都使用 TCP 协议，但其实 UDP 也可以，而 gRPC 干脆就用了 HTTP2。
+通常 TCP 连接可以是按需连接(需要调用的时候就先建立连接，调用结束后就立马断掉)，也可以是长连接(客户端和服务器建立起连接之后保持长期持有，不管此时有无数据包的发送，可以配合心跳检测机制定期检测建立的连接是否存活有效)，多个远程过程调用共享同一个连接。
+
+
+基于 TCP 协议的 RPC 调用、基于 HTTP 协议的 RPC 调用
+
+如 RMI 便是在 TCP 协议上传递可序列化的 Java 对象。
+
+基于 TCP 的协议实现的 RPC 调用，由于 TCP 协议处于协议栈的下层，能够更加灵活地对协议字段进行定制，减少网络开销，提高性能，实现更大的吞吐量和并发数。
+但是需要更多关注底层复杂的细节，实现的代价更高。同时对不同平台，如安卓，iOS 等，需要重新开发出不同的工具包来进行请求发送和相应解析，工作量大，难以快速响应和满足用户需求。
+
+
+基于 HTTP 协议实现的 RPC 则可以使用 JSON 和 XML 格式的请求或响应数据。
+
+而 JSON 和 XML 作为通用的格式标准(使用 HTTP 协议也需要序列化和反序列化，不过这不是该协议下关心的内容，成熟的 Web 程序已经做好了序列化内容)，开源的解析工具已经相当成熟，在其上进行二次开发会非常便捷和简单。
+
+但是由于 HTTP 协议是上层协议，发送包含同等内容的信息，使用 HTTP 协议传输所占用的字节数会比使用 TCP 协议传输所占用的字节数更高。
+
+因此在同等网络下，通过 HTTP 协议传输相同内容，效率会比基于 TCP 协议的数据效率要低，信息传输所占用的时间也会更长，当然压缩数据，能够缩小这一差距。
+
+
+其他的类型：
+
+在 OpenStack 中服务与服务之间使用 RESTful API 调用，而在服务内部则使用 RPC 调用各个功能模块。
+正是由于使用了 RPC 来解耦服务内部功能模块，使得 OpenStack 的服务拥有扩展性强，耦合性低等优点。
+
+OpenStack 的 RPC 架构中，加入了消息队列 RabbitMQ，这样做的目的是为了保证 RPC 在消息传递过程中的安全性和稳定性。
+
+
+
+
+
+
+
+
+
+
+
+
+
+RPC 和 Restful API 对比
+
+面对对象不同：
+
+RPC 更侧重于动作。
+REST 的主体是资源。
+
+
+
+
+
+
+----------------------------------------------------------------------------------------------------------
+
+Java 使用 DI 方式实现 IoC 的不止 Spring，包括 Google 的 Guice，还有一个冷门的 PicoContainer（极度轻量，但只提供 IoC）。
+
+
+-------------------------------------------------------------------
+
+
+高并发的基本表现为单位时间内系统能够同时处理的请求数,
+高并发的核心是对CPU资源的有效压榨。
+
+
+并行：两个事件同一时刻完成。
+并发：两个事件在同一时间段内交替发生,从宏观上看，两个事件都发生了。
+
+在每个任务运行前，CPU都需要知道从哪里加载，从哪里运行，这些信息保存在CPU寄存器和操作系统的程序计数器里面，这两样东西就叫做 CPU上下文。
+进程是由内核来管理和调度的，进程的切换只能发生在内核态，因此 虚拟内存、栈、全局变量等用户空间的资源，以及内核堆栈、寄存器等内核空间的状态,就叫做 进程上下文。
+线程会共享父进程的虚拟内存和全局变量等资源，因此 父进程的资源加上线上自己的私有数据就叫做线程的上下文。
+
+协程需要上下文切换，但是不会产生 CPU上下文切换和进程/线程上下文的切换,因为这些切换都是在同一个线程中，即用户态中的切换，可以简单的理解为，协程上下文之间的切换，就是移动了一下程序里面的指针，CPU资源依旧属于当前线程。
+Go的GMP模型。
+最终的效果就是协程进一步压榨了CPU的有效利用率。
+
+
+
+----------------------------------------------
+
+
+依赖传递：如果A依赖B，B依赖C，那么引入A，意味着B和C都会被引入。
+
+Maven的最近依赖策略：如果一个项目依赖相同的groupId、artifactId的多个版本，那么在依赖树（mvn dependency:tree）中离项目最近的那个版本将会被使用。（从这里可以看出Maven是不是有点小问题呢？能不能选择高版本的进行依赖么？据了解，Gradle就是version+策略）
+
+
+--------------------------------------
+
+
+Java Agent 有两种启动方式，一种是以 JVM 启动参数 -javaagent:xxx.jar 的形式随着 JVM 一起启动，这种情况下，会调用 premain方法，并且是在主进程的 main方法之前执行。另外一种是以 loadAgent 方法动态 attach 到目标 JVM 上，这种情况下，会执行 agentmain方法。
+
+
+
+
+
+
+RabbitMQ 是一个由 erlang 开发的 AMQP (Advanced Message Queuing Protocol) 的开源实现。
+
+AMQP ：高级消息队列协议，是应用层协议的一个开放标准，为面向消息的中间件设计。
+
+
+mybatis update 批量更新 foreach 返回值不为 总更新条数
+groovy 脚本异常无法抛出 比如sql的分号
+mybatis plus 多数据源不支持批量更新语句，需要处理wallfilter的config
+多数据源在springboot下需要先禁用datasource的自动配置
+
+
+
+
+
+传统的阻塞 I/O 模型 使用 Read 或者 Write 对某一个文件描述符(File Descriptor 以下简称 FD)进行读写。
+如果当前 FD 不可读或不可写，则阻塞。
+
+在代理模式（Proxy Pattern）中，一个类代表另一个类的功能。这种类型的设计模式属于结构型模式。 
+在代理模式中，我们创建具有现有对象的对象，以便向外界提供功能接口。
+
+反射工具类Mirror 
+http://projetos.vidageek.net/mirror/mirror/
+Date	(Mar 19, 2011)
+<!-- https://mvnrepository.com/artifact/net.vidageek/mirror -->
+<dependency>
+    <groupId>net.vidageek</groupId>
+    <artifactId>mirror</artifactId>
+    <version>1.6.1</version>
+</dependency>
+
+
+I/O 多路复用模型，同时监控多个文件描述符的可读可写情况，当其中的某些文件描述符可读或者可写时，select 方法就会返回可读以及可写的文件描述符个数。
+
+javac 加上 -parameters 正确获得了参数名
+$ javac -d "target/classes" -parameters src/main/java/com/test/*.java
+$ java -cp "target/classes" com.test.Java8Main
+在 maven 下，只需修改 pom 文件的 maven-compiler-plugin 插件配置即可，就是加上了 compilerArgs 节点 [doc ]，如下：
+
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+        <source>1.8</source>
+        <target>1.8</target>
+        <compilerArgs>
+            <arg>-parameters</arg>
+        </compilerArgs>
+    </configuration>
+</plugin>
+
+ Java SE 8 参数名信息回存储在 class 文件中结尾的 MethodParameters 属性
+
+
+ 在 Java 8 之前，javac 的 -g 选项可以在 class 文件中生成调试信息， class 文件中保存的调试信息就可以包含方法参数名。
+
+ code 属性里的出现了 LocalVariableTable 属性，这个属性保存的就是方法参数和方法内的本地变量。
+
+ 解析 class 文件典型的工具库有 ObjectWeb 的 ASM（wiki，home，mvn，javadoc）、Apache 的 Commons BCEL（wiki，home，mvn，javadoc）、 日本教授开发的 Javassist（wiki，github，mvn，javadoc）等。
+
+ Redis 服务采用 Reactor 的方式来实现文件事件处理器(每一个网络连接其实都对应一个文件描述符)
+
+
+SqlSessionFactory 是 Mybatis 应用的核心类，它是创建 SqlSesison 的工厂类，
+而 SqlSesison 是我们用 Mybatis 与数据库会话的 顶层 API 类，所有与数据库会话都需要创建 SqlSesison。
+
+
+Unsafe 提供两个功能：
+
+绕过 JVM 直接修改内存（对象）
+使用硬件 CPU 指令实现 CAS 原子操作
+
+在提升 Java 运行效率、增强 Java 语言底层操作能力方面起了很大作用
+
+cglib是针对类来实现代理的，他的原理是对指定的目标类生成一个子类，并覆盖其中方法实现增强，但因为采用的是继承，所以不能对final修饰的类进行代理
+
+
+阐述观察者模式
+
+
+
+RxJava 有四个基本概念：Observable (可观察者，即被观察者)、 Observer (观察者)、 subscribe (订阅)、事件。Observable 和 Observer 通过 subscribe() 方法实现订阅关系，从而 Observable 可以在需要的时候发出事件来通知 Observer。
+
+
+ScalarsConverterFactory
+
+RxJavaCallAdapterFactory
+
+A  0  0
+...
+Z  25 25
+
+
+AA 26 26 x 1 + 0
+...
+AZ 51 26 x 1 + 25
+
+
+BA 52 26 x 2 + 0
+...
+BZ 77 26 x 2 + 25
+
+
+CA 78 26 x 3 + 0
+...
+CZ 78 26 x 3 + 25
+
+
+ZA    26 x 26 + 0
+...
+ZZ    26 x 26 + 25 701
+
+
+AAA   26 x 26 x 1 + 26 x 1 + 0    702
+...
+AAZ   26 x 26 x 1 + 26 x 1 + 25
+
+ABA   26 x 26 x 1 + 26 x 2 + 0
+
+ZZZ   26 x 26 x 26 + 26 x 26 + 25
+
+
+rrs-dev01.dotfashion.cn/rrs
+rrs-test01.dotfashion.cn/rrs
+rrs-sit01.dotfashion.cn/rrs
+rrs.dotfashion.cn/rrs
+
+
+ims mq
+tss 从库
+匹配负向应收单
+
+
+
+Commons Pipeline
+Commons Chain
+
+========================================================================================================
+
+
+
+mysql-connector-java在5.1.23之前会将秒后面的精度丢弃再传给MySQL服务端
+5.1.23之后就不会将毫秒数丢弃了
+
+在mysql 5.6.4之后开始支持datetime已经支持小数点后更小的时间精度了，最多支持6位即最多可以支持到微妙级别。
+
+
+SpringBoot 项目打包后获取不到resource下资源的解决
+在项目中有几个文件需要下载，然后不想暴露真实路径，又没有CDN，便决定使用接口的方式来获取文件。最初的时候使用了传统的方法来获取文件路径，发现不行。查找资料后发现是SpringBoot框架导致的，得用另外的方法：
+
+//听说在linux系统中会失效。
+//不用听说了，就是会挂，血的教训
+String path = ResourceUtils.getURL("classpath:").getPath();
+//此方法返回读取文件字节的方式在linux系统中无异。
+InputStream inputStream  = getClass().getClassLoader().getResourceAsStream("RSA/privateKey.txt");
+//声明io的resources对象也可访问
+Resource resource = new ClassPathResource(uploadPath+privateKeyFileName);
+// 此方法用来写文件或上传文件在本项目中指定路径。
+String privateKeyFileStr = request.getSession().
+            getServletContext().getRealPath("RSA/privateKey.txt"); 
+刚开始的时候用的就是第一种方法，初生牛犊不怕虎吧，说不定在linux上就行呢，本地环境测试通过，然后再上linux测试环境，不出意外，挂了。
+
+//听说在linux系统中会失效。
+//不用听说了，就是会挂，血的教训
+String path = ResourceUtils.getURL("classpath:").getPath();
+乖乖使用其他的方法，这里选择使用了第三种方法：
+
+public byte[] downloadServerCrt() {
+    try {
+        Resource resource = new ClassPathResource("static/syslog/cert/server.crt");
+        byte[] bytes = readFileInBytesToString(resource);
+        return bytes;
+    } catch (Exception e) {
+        throw new Exception("下载失败" + e.getMessage());
+    }
+}
+这里还有一个坑，也是踩过了才知道，这边的resource是Resource类型的变量，刚开始我使用了resource.getFile()方法获取到File对象然后再采用IO流进行操作，即：
+
+File file = resource.getFile();
+DataInputStream isr = new DataInputStream(resource.getInputStream());
+...
+在IDE中运行是完全没有问题的，但使用mvn打包成jar包后，再运行就会提示ERROR：
+
+java.io.FileNotFoundException: class path resource [static/syslog/cert/server.crt] cannot be resolved to absolute file path because it does not reside in the file system: jar:file:/home/admin/dtlog-web/lib/log-web-3.0.2.jar!/static/syslog/cert/server.crt
+后来查阅了资料说：一旦打成jar包后，使用File是访问不到资源的内容的，推荐使用getInputStream()的方法，修改后：
+
+InputStream in = resource.getInputStream();
+DataInputStream isr = new DataInputStream(in);
+...
+测试没有问题，bug解决。
+
+
+========================================================
+
+
+如果临时变量承担多个责任，他就应该被替换（分解）为多个临时变量，每个变量只承担一个责任。
+注意，当临时变量作为 循环变量 或者 结果收集变量 时会被多次赋值，这种不需要分解。
+
+任何有返回值的函数，都不应该有看得到的副作用。
+
+某个函数既返回对象的状态值，又修改对象状态，意思为这个函数中需要调用一个查询，通过这个查询结果修改状态值，最后返回查询结果，可以分别建立两个不同的函数，一个负责查询，一个负责修改，调用过程改为先调用修改函数，这个修改函数中调用查询，但是不返回值，再调用查询函数，获得结果。
+
+python是动态语言，一个变量所指向对象的类型在运行时才确定，编译器做不了任何预测，也就无从优化。
+python是解释执行，但是不支持JIT(just in time compiler)。
+python中一切都是对象，每个对象都需要维护引用计数，增加了额外的工作。
+python GIL，多线程并不能真正的并发。
+垃圾回收，这个可能是所有具有垃圾回收的编程语言的通病。python采用标记和分代的垃圾回收策略，每次垃圾回收的时候都会中断正在执行的程序，造成所谓的顿卡。
+
+
+
+
+java  date 的 equals 实际比较的是getTime 即 mills 毫秒
+但是时间date的tostring为秒级，因此看起来一样但是实际不同
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
