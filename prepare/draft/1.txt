@@ -1,0 +1,11 @@
+﻿
+
+Caffe，CNTK，DeepLearning4j，Keras，MXNet和TensorFlow是深度学习框架。Apache Mahout、H2O、Scikit-learning和Spark MLlib是机器学习框架。 Theano跨越了这两个类别。
+
+
+机器学习框架和深度学习框架之间有区别。本质上，机器学习框架涵盖用于分类，回归，聚类，异常检测和数据准备的各种学习方法，并且其可以或可以不包括神经网络方法。深度学习或深度神经网络（DNN）框架涵盖具有许多隐藏层的各种神经网络拓扑。这些层包括模式识别的多步骤过程。网络中的层越多，可以提取用于聚类和分类的特征越复杂。
+
+
+建议喜欢Python的人Scikit-learn。
+
+喜欢Scala（和Java）的人和在Hadoop中有他们的数据的人的Spark MLlib或Deeplearning4j。

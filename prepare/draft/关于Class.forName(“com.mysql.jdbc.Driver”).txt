@@ -1,0 +1,43 @@
+﻿ 关于Class.forName(“com.mysql.jdbc.Driver”)
+
+传统的使用jdbc来访问数据库的流程为：
+Class.forName(“com.mysql.jdbc.Driver”);
+String url = “jdbcmysqllocalhost3306testuser=root&password=123456″;
+Connection con = DriverManager.getConnection(url);
+Statement statement = con.createStatement();
+
+最开始使用的时候，不明白为什么首先要加载一个驱动类，之后就可以取得了Connection了，很好奇DriverManager是怎么获得那个驱动类的信息，后来看了下com.mysql.jdbc.Driver这个类的源代码，豁然开朗了。原来在com.mysql.jdbc.Driver类中有这么一段静态初始化代码：
+static {
+try {
+java.sql.DriverManager.registerDriver(new Driver());
+} catch (SQLException E) {
+throw new RuntimeException(“Can’t register driver!”);
+}
+}
+也就是，在Class.forName加载完驱动类，开始执行静态初始化代码时，会自动新建一个Driver的对象，并调用DriverManager.registerDriver把自己注册到DriverManager中去。
+
+ps1 Class.forName(String) 与ClassLoader.loadClass(String)的区别
+Class.forName(String) 加载类，并且执行类初始化；可以通过Class.forName(String, boolean, ClassLoader)第二个参数来仅仅加载类不执行初始化；
+ClassLoader.loadClass(String) 仅仅加载类，不执行类初始化；
+
+ps2 有时会看到这种用法：
+Class.forName(“com.mysql.jdbc.Driver”).newInstance();
+这是没有必要的，正如前述，静态初始化已经new了一个Driver的对象，注册到DriverManager中去，在此再建立一个Driver对象则是完全没有必要的，浪费空间。
+
+ps3 结合ps1，Class.forName(“com.mysql.jdbc.Driver”);相当于：
+ClassLoader loader = Thread.currentThread().getContextClassLoader();
+Class cls = loader.loadClass(“com.mysql.jdbc.Driver”);
+cls.newInstance();
+这种方法的问题同ps2, 浪费了一个Driver对象；
+
+ps4 在java 6中，引入了service provider的概念，即可以在配置文件中配置service（可能是一个interface或者abstract class）的provider（即service的实现类）。配置路径是：META-INFservices下面。详细信息见：httpdocs.oracle.comjavase6docstechnotesguidesjarjar.html#Service%20Provider
+而java.sql.DriverManager也添加了对此的支持，因此，在JDK6中，DriverManager的查找Driver的范围为：
+1）system property “jdbc.drivers” 中配置的Driver值；
+2）用户调用Class.forName()注册的Driver
+3）service provider配置文件java.sql.Driver中配置的Driver值。
+因此，在jdk6中，其实是可以不用调用Class.forName来加载mysql驱动的，因为mysql的驱动程序jar包中已经包含了java.sql.Driver配置文件，并在文件中添加了com.mysql.jdbc.Driver.但在JDK6之前版本，还是要调用这个方法。
+
+参考文档：
+1）httpdocs.oracle.comjavase1.5.0docsapijavasqlDriverManager.html
+2）httpdocs.oracle.comjavase6docsapiindex.htmljavasqlDriverManager.html
+3）httpdocs.oracle.comjavase6docstechnotesguidesjarjar.html#Service%20Provider

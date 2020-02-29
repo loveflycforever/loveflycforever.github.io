@@ -1,0 +1,5 @@
+﻿mysql不能存储中文的原因
+
+首先将mysql.ini配置文件的UTF8的setting注释解开
+第二将client和mysqld的default-character-set（不知道是不是这样写，忘了）设置为utf8
+第三创建数据库数据表的时候将编码设置为utf8和utf8_unicion_ci

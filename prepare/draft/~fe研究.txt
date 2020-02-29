@@ -1,0 +1,222 @@
+﻿正在研究froala_editor2.2.2
+<div id='edit'></div>
+<br/>
+<pre id="eg-previewer" class="prettyprint">
+</pre>
+$('#edit').froalaEditor({
+	heightMin: 100,
+	heightMax: 200
+});
+启用在线代码编辑器
+<!-- Code Mirror CSS file. -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.3.0/codemirror.min.css">
+<!-- Include the plugin CSS file. -->
+<link rel="stylesheet" href="../css/plugins/code_view.min.css">
+<!-- Code Mirror JS files. -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.3.0/codemirror.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.3.0/mode/xml/xml.min.js"></script>
+<!-- Include the plugin JS file. -->
+<script type="text/javascript" src="../js/plugins/code_view.min.js"></script>
+初始化/销毁编辑器
+$('#edit').froalaEditor({});
+$('#edit').froalaEditor('destroy');
+获得内容
+$('div#froala-editor').froalaEditor('html.get');
+自定义添加按钮
+$(function() {
+    $.FroalaEditor.DefineIcon('insertHTML', {NAME: 'plus'});
+    $.FroalaEditor.RegisterCommand('insertHTML', {
+      title: 'Insert HTML',
+      focus: true,
+      undo: true,
+      refreshAfterCallback: true,
+      callback: function () {
+        this.html.insert('Some Custom HTML.');
+        this.undo.saveStep();
+	this.html.set('');
+        this.events.focus();
+      }
+    });
+
+    $('div#froala-editor').froalaEditor({
+      toolbarButtons: [
+        'bold', 'italic', 'underline', 'paragraphFormat', 'formatOL',
+        'formatUL', 'insertHTML', 'undo', 'redo', 'html'
+      ]
+    })
+  });
+自定义组合按钮
+$.FroalaEditor.DefineIcon('my_dropdown', {NAME: 'cog'});
+    $.FroalaEditor.RegisterCommand('my_dropdown', {
+      title: 'Advanced options',
+      type: 'dropdown',
+      focus: false,
+      undo: false,
+      refreshAfterCallback: true,
+      options: {
+        'v1': 'Option 1',
+        'v2': 'Option 2'
+      },
+      callback: function (cmd, val) {
+        console.log (val);
+      },
+      // Callback on refresh.
+      refresh: function ($btn) {
+        console.log ('do refresh');
+      },
+      // Callback on dropdown show.
+      refreshOnShow: function ($btn, $dropdown) {
+        console.log ('do refresh when show');
+      }
+    });
+
+    $('div#froala-editor').froalaEditor({
+      toolbarButtons: ['bold', 'italic', 'formatBlock', 'my_dropdown']
+    })
+  });
+绑定事件
+ $(function() {
+    $('div#froala-editor')
+      .on('froalaEditor.initialized', function (e, editor) {
+        editor.events.bindClick($('body'), 'a#get-text', function () {
+          editor.html.set('');
+          editor.events.focus();
+        });
+      })
+      .froalaEditor()
+  });
+
+图片工具按钮
+<!-- Include the plugin js file. -->
+<script src="../js/plugins/image.min.js"></script>
+imageEditButtons: 
+图片样式工具按钮自定义
+<style>
+  .class1 {
+    border-radius: 10%;
+    border: 2px solid #efefef;
+  }
+
+  .class2 {
+    opacity: 0.5;
+  }
+</style>
+$(function() {
+    $('div#froala-editor').froalaEditor({
+      // Define new image styles.
+      imageStyles: {
+        class1: 'Class 1',
+        class2: 'Class 2'
+      },
+    })
+  });
+文字方向
+direction: rtl / ltr
+中文
+language: "zh_cn"
+自定义超链接样式
+$(function() {
+    $('div#froala-editor').froalaEditor({
+      // Define new link styles.
+      linkStyles: {
+        class1: 'Class 1',
+        class2: 'Class 2'
+      },
+    })
+  });
+自定义设置超链接地址
+$(function() {
+    $('div#froala-editor').froalaEditor({
+      linkList: [
+        {
+          text: 'Froala',
+          href: 'https://froala.com',
+          target: '_blank'
+        },
+        {
+          text: 'Google',
+          href: 'https://google.com',
+          target: '_blank'
+        },
+        {
+          text: 'Facebook',
+          href: 'https://facebook.com'
+        }
+      ]
+    })
+  });
+最大字符数
+charCounterMax: 140,
+输入框提示
+placeholderText: 'Start typing something...'
+当pasteplain选项启用，froala WYSIWYG HTML编辑器过滤器粘贴的内容并只保留纯文本通过去除所有丰富的格式。 
+pastePlain: true
+弹出编辑
+<div id="froala-editor" style="display: inline-block;">
+  Click here to edit this text in a Froala popup.
+</div>
+ $(function() {
+    $('div#froala-editor').froalaEditor({
+      editInPopup: true
+    })
+  });
+全工具
+toolbarButtons: ['fullscreen', 'bold', 'italic', 'underline', 'strikeThrough', 'subscript', 'superscript', 'fontFamily', 'fontSize', '|', 'color', 'emoticons', 'inlineStyle', 'paragraphStyle', '|', 'paragraphFormat', 'align', 'formatOL', 'formatUL', 'outdent', 'indent', '-', 'insertLink', 'insertImage', 'insertVideo', 'insertFile', 'insertTable', '|', 'quote', 'insertHR', 'undo', 'redo', 'clearFormatting', 'selectAll', 'html'],
+使用iframe编辑的内容将被放置在一个iframe和网页的其他部分分离。 
+iframe: true
+点击才初始化编辑器
+initOnClick: true
+内部编辑器
+toolbarInline: true,
+编辑器样式
+theme: 'royal'
+编辑器是否跟随
+toolbarSticky: false
+编辑框移动
+toolbarStickyOffset: 100
+实时获得html代码显示
+$(function() {
+    $('div#froala-editor')
+      .on('froalaEditor.contentChanged froalaEditor.initialized', function (e, editor) {
+        $('pre#eg-previewer').text(editor.codeBeautifier.run(editor.html.get()))
+        $('pre#eg-previewer').removeClass('prettyprinted');
+        prettyPrint()
+      })
+      .froalaEditor()
+});
+实时获得编辑内容显示
+$(function() {
+    $('div#froala-editor').froalaEditor()
+    .on('froalaEditor.contentChanged', function (e, editor) {
+      $('#preview').html(editor.html.get());
+    })
+  });
+工具条
+toolbarButtons:(≥ 1200px) ['bold', 'italic', 'underline', 'insertLink', 'undo', 'redo'],
+toolbarButtonsMD:(≥ 992px)
+toolbarButtonsSM:(≥ 768px)
+toolbarButtonsXS:(< 768px)
+右下角计数器
+charCounterCount: false,
+
+toolbarVisibleWithoutSelection: true
+可用插件
+pluginsEnabled: ['image', 'link', 'draggable'],
+回车键是div还是br
+enter: $.FroalaEditor.ENTER_DIV
+enter: $.FroalaEditor.ENTER_BR
+快捷键可用
+shortcutsEnabled: ['bold', 'italic']
+设置tab按钮空格数目
+tabSpaces: 4
+
+其他一个按钮的编辑
+<button id="edit" class="r-btn highlight text-small">Button</button>
+$(function() {
+    $('button#edit').froalaEditor()
+    .on('froala.editor.contentChanged', function () {
+      console.log ('content changed');
+    })
+  });
+div
+textarea

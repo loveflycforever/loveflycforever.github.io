@@ -1,0 +1,12 @@
+﻿-- 先查看event是否已经开启
+SHOW VARIABLES LIKE 'event_scheduler';
+-- 若event是OFF状态，则开启event
+SET GLOBAL event_scheduler = 1;
+-- 每周执行一次删除超过七天的数据
+CREATE EVENT delete_data_dayly 
+ON SCHEDULE EVERY 1 DAY STARTS '2016-09-21 8:30:00' 
+DO 
+DELETE FROM redis_change_record WHERE DATE(TIMESTAMP) <= DATE_SUB(CURDATE(), INTERVAL 1 DAY)
+
+-- 查看任务状态，便于修改
+SELECT * FROM mysql.event;

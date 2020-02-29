@@ -1,0 +1,35 @@
+﻿    On-Line Transaction Processing联机事务处理系统(OLTP)
+    也称为面向交易的处理系统，其基本特征是顾客的原始数据可以立即传送到计算中心进行处理，并在很短的时间内给出处理结果。这样做的最大优点是可以即时地处理输入的数据，及时地回答。也称为实时系统(Real time System)。衡量联机事务处理系统的一个重要性能指标是系统性能，具体体现为实时响应时间(Response Time)，即用户在终端上送入数据之后，到计算机对这个请求给出答复所需要的时间。
+OLTP 数据库旨在使事务应用程序仅写入所需的数据，以便尽快处理单个事务
+
+
+
+Mysql Explain 详解
+explain输出解释
+
+select_type,select的类型
+SIMPLE
+简单SELECT(不使用UNION或子查询等) 
+PRIMARY
+select的最外层
+UNION
+UNION中的第二个或后面的SELECT语句
+
+
+eval解析JSON
+
+1.对于服务器返回的JSON字符串，如果jquery异步请求没做类型说明，或者以字符串方式接受，那么需要做一次对象化处理，方式不是太麻烦，就是将该字符串放于eval()中执行一次。这种方式也适合以普通javascipt方式获取json对象，以下举例说明： 
+
+var dataObj=eval("("+data+")");//转换为json对象 
+为什么要 eval这里要添加 “("("+data+")");//”呢？ 
+
+原因在于：eval本身的问题。 由于json是以”{}”的方式来开始以及结束的，在JS中，它会被当成一个语句块来处理，所以必须强制性的将它转换成一种表达式。 
+
+加上圆括号的目的是迫使eval函数在处理JavaScript代码的时候强制将括号内的表达式（expression）转化为对象，而不是作为语句（statement）来执行。举一个例子，例如对象字面量{}，如若不加外层的括号，那么eval会将大括号识别为JavaScript代码块的开始和结束标记，那么{}将会被认为是执行了一句空语句。所以下面两个执行结果是不同的： 
+复制代码 代码如下:
+
+alert(eval("{}"); // return undefined 
+alert(eval("({})");// return object[Object] 
+
+对于这种写法，在JS中，可以到处看到。 
+2.对于服务器返回的JSON字符串，如果jquery异步请求将type（一般为这个配置属性）设为“json”，或者利用$.getJSON()方法获得服务器返回，那么就不需要eval（）方法了，因为这时候得到的结果已经是json对象了，只需直接调用该对象即可

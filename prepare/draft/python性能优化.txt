@@ -1,0 +1,132 @@
+﻿>http://developer.51cto.com/art/201708/547429.htm
+
+##### 1 python是动态语言
+
+变量所指向对象的类型在运行时才确定。
+
+在静态语言，如C++中，编译的时候就确定了运行时的代码。
+
+访问对象的属性的过程非常复杂，而且通过同一个变量访问到的python对象还可能不一样(例 Lazy property)。
+
+在C语言中，访问属性只需对象的地址加上属性的偏移。
+
+##### 2 python是解释执行
+
+但是不支持JIT(just in time compiler)。
+
+##### 3 python中一切都是对象
+
+每个对象都需要维护引用计数，增加了额外的工作。
+
+##### 4 python GIL
+
+由于GIL的原因，python中的多线程并不能真正的并发。
+
+在IO密集型的业务场景，影响小，在CPU密集型的场景，影响大。
+
+在单线程，GIL也会影响性能，因为python每执行100个opcode(默认，可以通过sys.setcheckinterval()设置)就会尝试线程的切换。
+
+##### 5 垃圾回收
+
+所有具有垃圾回收的编程语言的通病。
+
+python采用标记和分代的垃圾回收策略，每次垃圾回收的时候都会中断正在执行的程序，造成顿卡。
+
+禁用Python的GC机制后，性能提升10%。
+
+### 基于profile的优化
+
+对于python程序，比较出名的profile工具有三个：profile、cprofile和hotshot。
+
+其中profile是纯python语言实现的，Cprofile将profile的部分实现native化，hotshot也是C语言实现。
+
+hotshot与Cprofile的区别在于：hotshot对目标代码的运行影响较小，代价是更多的后处理时间，而且hotshot已经停止维护了。
+
+需要注意的是，profile(Cprofile hotshot)只适合单线程的python程序。
+
+对于多线程，可以使用yappi，yappi不仅支持多线程，还可以精确到CPU时间。
+
+对于协程(greenlet)，可以使用greenletprofiler，基于yappi修改，用greenlet context hook住thread context。
+
+profile GUI tools，查看profile结果的工具，比如，visualpytune、qcachegrind、runsnakerun。
+
+#### 针对优化
+
+##### 1 减少函数的调用层次
+
+增加函数, 直接返回最终结果，减少函数回调和嵌套。
+
+#### 2 优化属性查找
+
+因为python的属性查找效率低，如果在代码中频繁访问一个属性(比如for循环)，可以考虑用局部变量代替对象的属性。
+
+#### 3 关闭GC
+
+关闭GC可以提升python的性能，GC带来的顿卡在实时性要求比较高的应用场景也是难以接受的。
+
+但关闭GC并不是一件容易的事情。我们知道python的引用计数只能应付没有循环引用的情况，有了循环引用就需要靠GC来处理。
+
+#### 4 设置checkinterval
+
+如果程序确定是单线程，可以修改checkinterval为一个更大的值。
+
+#### 5 使用__slots__
+
+slots最主要的目的是用来节省内存，也能一定程度上提高性能。
+
+### python C扩展
+
+1 注意引用计数的正确管理
+
+2 C扩展与多线程，指在扩展中new出来的C语言线程
+
+3 C扩展应用场景，仅适合与业务代码的关系不那么紧密的逻辑
+
+#### CPython
+
+##### cython的使用方法
+
+step1：将文件名(cython_example.py)改为cython_example.pyx
+
+step2：增加一个setup.py文件，添加一下代码：
+
+```
+    from distutils.core import setup 
+    from Cython.Build import cythonize 
+      
+     
+    setup( 
+      name = 'cython_example', 
+      ext_modules = cythonize("cython_example.pyx"), 
+    )  
+
+```
+
+step3：执行python setup.py build_ext –inplace
+	
+增加了两个文件，对应中间结果和最后的动态链接库
+
+step4：执行命令 python -c “import cython_example;cython_example.main()”
+
+##### 参数提供静态类型(static typing)判断
+
+```
+def f(double x): # 参数类型判断 
+    return x**2-x 
+```
+
+##### 返回值也可以引入静态类型判断
+```
+cdef double f(double x): # 返回值类型判断 
+ 
+    return x**2-x 
+```
+
+#### pypy
+
+CPython的一个替代实现，其最主要的优势就是速度，由于JIT Compiler，大概比cpython要快3到5倍。
+
+另外pypy占用的内存更少，而且支持stackless，基本等同于协程。
+
+pypy的缺点在于对C扩展方面支持的不太好，需要使用CFFi来做binding。对于使用广泛的library来说，一般都会支持pypy。
+

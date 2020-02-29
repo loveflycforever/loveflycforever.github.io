@@ -1,0 +1,54 @@
+﻿>http://developer.51cto.com/art/201708/547034.htm
+
+#### 1 不要以mutable对象作为默认参数
+python中一切都是对象，函数也不列外，默认参数只是函数的一个属性。而默认参数在函数定义的时候已经求值了。
+```
+def report(when=time.time()): 
+    return when # 返回值不会返回正确的当前时间
+```
+```
+def report(when=None): 
+    if when is None: 
+        when = time.time() 
+    return when # 此处正确返回
+```
+
+#### 2 区别 x += y 和 x = x + y
+二者并不一样，前者x指向一个新的对象，后者x在原来的对象上修改，当然，哪种效果是正确的取决于应用场景。
+
+#### 3 小圆括号(parenthese)
+python中，小括号还能表示元组(tuple)这一数据类型, 元组是immutable的序列。
+```
+a=(1) 
+type(a) # <type 'int'>  
+a=(1,) 
+type(a) # <type 'tuple'>  
+```
+
+#### 3 生成一个元素是列表的列表
+```
+a = [[]] * 10 # 错误
+a = [[] for _ in range(10)] # 正确
+```
+
+#### 4 在访问列表的时候，修改列表
+当循环列表时，删除元素，list长度会变小，元素会向前移动，元素下标会变小，可能会导致查询操作出现问题。
+```
+def modify_lst(lst): 
+    for idx, elem in enumerate(lst): 
+        if elem % 3 == 0: 
+            del lst[idx] # 此处会有问题
+```
+
+#### 5 闭包与lambda
+Python的闭包是 迟绑定 ，闭包中用到的变量的值，是在内部函数被调用时查询得到的。
+```
+[lambda x:i*x for i in range(5)] # 8 8 8 8 8
+```
+```
+[lambda x, i=i:i*x for i in range(5)] # 0 2 4 6 8
+```
+
+#### 6 `__del__()`函数
+如果在循环引用中的对象定义了`__del__()`,那么python gc不能进行回收，因此，存在内存泄漏的风险。
+

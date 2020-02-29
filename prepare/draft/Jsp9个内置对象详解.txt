@@ -1,0 +1,140 @@
+﻿ Jsp9个内置对象详解
+JSP内置对象(9个常用的内置对象)
+   1.request对象
+客户端的请求信息被封装在request对象中，通过它才能了解到客户的需求，
+然后做出响应。它是HttpServletRequest类的实例。
+序号方法说明
+objectgetAttribute(Stringname) 返回指定属性的属性值
+EnumerationgetAttributeNames() 返回所有可用属性名的枚举
+StringgetCharacterEncoding() 返回字符编码方式
+intgetContentLength() 返回请求体的长度（以字节数）
+StringgetContentType() 得到请求体的MIME类型
+ServletInputStreamgetInputStream() 得到请求体中一行的二进制流
+StringgetParameter(Stringname) 返回name指定参数的参数值
+EnumerationgetParameterNames() 返回可用参数名的枚举
+String[]getParameterValues(Stringname) 返回包含参数name的所有值的数组
+StringgetProtocol() 返回请求用的协议类型及版本号
+StringgetScheme() 返回请求用的计划名,如:http.https及ftp等
+StringgetServerName() 返回接受请求的服务器主机名
+intgetServerPort() 返回服务器接受此请求所用的端口号
+BufferedReadergetReader() 返回解码过了的请求体
+StringgetRemoteAddr() 返回发送此请求的客户端IP地址
+StringgetRemoteHost() 返回发送此请求的客户端主机名
+voidsetAttribute(Stringkey,Objectobj) 设置属性的属性值
+StringgetRealPath(Stringpath) 返回一虚拟路径的真实路径
+   2.response对象
+response对象包含了响应客户请求的有关信息，但在JSP中很少直接用到它。
+它是HttpServletResponse类的实例。
+序号方法说明
+1StringgetCharacterEncoding() 返回响应用的是何种字符编码
+2ServletOutputStreamgetOutputStream() 返回响应的一个二进制输出流
+3PrintWritergetWriter() 返回可以向客户端输出字符的一个对象
+4voidsetContentLength(intlen) 设置响应头长度
+5voidsetContentType(Stringtype) 设置响应的MIME类型
+6sendRedirect(java.lang.Stringlocation) 重新定向客户端的请求
+   3.session对象
+session对象指的是客户端与服务器的一次会话，从客户连到服务器的一个
+WebApplication开始，直到客户端与服务器断开连接为止。它是HttpSession
+类的实例.
+序号方法说明
+longgetCreationTime() 返回SESSION创建时间
+publicStringgetId() 返回SESSION创建时JSP引擎为它设的惟一ID号
+longgetLastAccessedTime() 返回此SESSION里客户端最近一次请求时间
+intgetMaxInactiveInterval() 返回两次请求间隔多长时间此SESSION被取
+消(ms)
+String[]getValueNames() 返回一个包含此SESSION中所有可用属性的数
+组
+voidinvalidate() 取消SESSION，使SESSION不可用
+booleanisNew() 返回服务器创建的一个SESSION,客户端是否已经加入
+voidremoveValue(Stringname) 删除SESSION中指定的属性
+voidsetMaxInactiveInterval() 设置两次请求间隔多长时间此SESSION被取
+消(ms)
+   4.out对象
+out对象是JspWriter类的实例,是向客户端输出内容常用的对象
+序号方法说明
+voidclear() 清除缓冲区的内容
+voidclearBuffer() 清除缓冲区的当前内容
+voidflush() 清空流
+intgetBufferSize() 返回缓冲区以字节数的大小，如不设缓冲区则为0
+intgetRemaining() 返回缓冲区还剩余多少可用
+booleanisAutoFlush() 返回缓冲区满时，是自动清空还是抛出异常
+voidclose() 关闭输出流
+   5.page对象
+page对象就是指向当前JSP页面本身，有点象类中的this指针，它是
+java.lang.Object类的实例
+序号方法说明
+classgetClass 返回此Object的类
+inthashCode() 返回此Object的hash码
+booleanequals(Objectobj) 判断此Object是否与指定的Object对象相等
+voidcopy(Objectobj) 把此Object拷贝到指定的Object对象中
+Objectclone() 克隆此Object对象
+StringtoString() 把此Object对象转换成String类的对象
+voidnotify() 唤醒一个等待的线程
+voidnotifyAll() 唤醒所有等待的线程
+voidwait(inttimeout) 使一个线程处于等待直到timeout结束或被唤醒
+voidwait() 使一个线程处于等待直到被唤醒
+voidenterMonitor() 对Object加锁
+voidexitMonitor() 对Object开锁
+   6.application对象
+application对象实现了用户间数据的共享，可存放全局变量。它开始于服务器
+的启动，直到服务器的关闭，在此期间，此对象将一直存在；这样在用户的前
+后连接或不同用户之间的连接中，可以对此对象的同一属性进行操作；在任何
+地方对此对象属性的操作，都将影响到其他用户对此的访问。服务器的启动和
+关闭决定了application对象的生命。它是ServletContext类的实例。
+序号方法说明
+ObjectgetAttribute(Stringname) 返回给定名的属性值
+EnumerationgetAttributeNames() 返回所有可用属性名的枚举
+voidsetAttribute(Stringname,Objectobj) 设定属性的属性值
+voidremoveAttribute(Stringname) 删除一属性及其属性值
+StringgetServerInfo() 返回JSP(SERVLET)引擎名及版本号
+StringgetRealPath(Stringpath) 返回一虚拟路径的真实路径
+ServletContextgetContext(Stringuripath) 返回指定WebApplication的application对象
+intgetMajorVersion() 返回服务器支持的ServletAPI的最大版本号
+intgetMinorVersion() 返回服务器支持的ServletAPI的最大版本号
+StringgetMimeType(Stringfile) 返回指定文件的MIME类型
+URLgetResource(Stringpath) 返回指定资源(文件及目录)的URL路径
+InputStreamgetResourceAsStream(Stringpath) 返回指定资源的输入流
+RequestDispatchergetRequestDispatcher(Stringuripath) 返回指定资源的RequestDispatcher对象
+ServletgetServlet(Stringname) 返回指定名的Servlet
+EnumerationgetServlets() 返回所有Servlet的枚举
+EnumerationgetServletNames() 返回所有Servlet名的枚举
+voidlog(Stringmsg) 把指定消息写入Servlet的日志文件
+voidlog(Exceptionexception,Stringmsg) 把指定异常的栈轨迹及错误消息写入Servlet的日志文件
+voidlog(Stringmsg,Throwablethrowable) 把栈轨迹及给出的Throwable异常的说明信息写入Servlet的日志文件
+   7.exception对象
+exception对象是一个例外对象，当一个页面在运行过程中发生了例外，就产
+生这个对象。如果一个JSP页面要应用此对象，就必须把isErrorPage设为true，
+否则无法编译。他实际上是Java.lang.Throwable的对象
+序号方法说明
+StringgetMessage() 返回描述异常的消息
+StringtoString() 返回关于异常的简短描述消息
+voidprintStackTrace() 显示异常及其栈轨迹
+ThrowableFillInStackTrace() 重写异常的执行栈轨迹
+   8.pageContext对象
+pageContext对象提供了对JSP页面内所有的对象及名字空间的访问，也就是
+说他可以访问到本页所在的SESSION，也可以取本页面所在的application的
+某一属性值，他相当于页面中所有功能的集大成者，它的本类名也叫
+pageContext。
+序号方法说明
+JspWritergetOut() 返回当前客户端响应被使用的JspWriter流(out)
+HttpSessiongetSession() 返回当前页中的HttpSession对象(session)
+ObjectgetPage() 返回当前页的Object对象(page)
+ServletRequestgetRequest() 返回当前页的ServletRequest对象(request)
+ServletResponsegetResponse() 返回当前页的ServletResponse对象(response)
+ExceptiongetException() 返回当前页的Exception对象(exception)
+ServletConfiggetServletConfig() 返回当前页的ServletConfig对象(config)
+ServletContextgetServletContext() 返回当前页的ServletContext对象(application)
+voidsetAttribute(Stringname,Objectattribute) 设置属性及属性值
+voidsetAttribute(Stringname,Objectobj,intscope) 在指定范围内设置属性及属性值
+publicObjectgetAttribute(Stringname) 取属性的值
+ObjectgetAttribute(Stringname,intscope) 在指定范围内取属性的值
+publicObjectfindAttribute(Stringname) 寻找一属性,返回起属性值或NULL
+voidremoveAttribute(Stringname) 删除某属性
+voidremoveAttribute(Stringname,intscope) 在指定范围删除某属性
+intgetAttributeScope(Stringname) 返回某属性的作用范围
+EnumerationgetAttributeNamesInScope(intscope) 返回指定范围内可用的属性名枚举
+voidrelease() 释放pageContext所占用的资源
+voidforward(StringrelativeUrlPath) 使当前页面重导到另一页面
+voidinclude(StringrelativeUrlPath) 在当前位置包含另一文件
+   9.config对象
+config对象是在一个Servlet初始化时，JSP引擎向它传递信息用的，此信息包括Servlet初始化时所要用到的参数（通过属性名和属性值构成）以及服务器的有关信息（通过传递一个ServletContext对象）

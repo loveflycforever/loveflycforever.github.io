@@ -1,0 +1,21 @@
+﻿PPT《机器学习numpy与pandas基础》
+
+《matplotlib绘图可视化知识点整理》阅读地址：http://t.cn/RqDxDo8
+
+《Python100例》阅读地址：http://t.cn/RfOJSc5
+
+《一天搞懂深度学习心得》观看地址：http://t.cn/RTukvY6
+
+
+《DeepLearning.TV》视频观看地址：http://t.cn/RTuDdSQ
+
+《深度学习介绍-李宏毅》PPT下载地址：详见文末
+
+《Machine Learning》视频观看地址：http://t.cn/RYpskDe
+
+《Stanford CS231N 2017》观看地址：http://t.cn/RTueAct
+
+
+《李宏毅机器学习2017》观看地址：http://t.cn/RpO3VJC
+
+《李宏毅深度学习2017》观看地址：http://t.cn/RpO3VJK
