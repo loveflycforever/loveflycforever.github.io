@@ -1,0 +1,36 @@
+1. CAP 理论和 BASE 理论
+Consistency(一致性), 数据一致更新，所有数据变动都是同步的
+Availability(可用性), 好的响应性能
+Partition tolerance(分区容忍性) 可靠性
+任何分布式系统只可同时满足二点，没法三者兼顾。
+BASE理论是指，Basically Available（基本可用）、Soft-state（ 软状态/柔性事务）、Eventual Consistency（最终一致性）。
+是基于CAP定理演化而来，是对CAP中一致性和可用性权衡的结果。
+
+11. 如何保证消息的一致性
+消息中间件的应用场景
+异步通讯
+解耦
+并发缓冲 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

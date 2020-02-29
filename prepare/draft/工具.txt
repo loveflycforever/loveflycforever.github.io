@@ -1,0 +1,39 @@
+ Dropwizard, Spring Boot 
+ metrics 度量
+ ELK
+ 日志采集工具Logstash、Fluentd、Logtail（阿里）
+ Grafana Kibaha
+
+
+SOFABoot 
+类隔离，面对JAR包冲突问题
+SOFAArk类隔离框架
+Ark Plugin，它是 SOFAArk 框架定义的一种特殊的 JAR 包文件格式，SOFAArk 框架会自动识别 Ark Plugin 这种特殊依赖。
+需要添加 SOFABoot 官方提供的 maven 打包插件
+需要在相关模块 `pom.xml` 文件中添加一个导出类和一个导入类配置
+
+在 Spring Boot 工程中集成 SOFABoot 类隔离能力，只需要添加 SOFABoot 提供的类隔离框架 starter。
+
+重复索引检测工具包，来自percona
+https://www.percona.com/downloads/percona-toolkit/LATEST/
+
+Magento （麦进斗） 是一套专业开源的电子商务系统。php
+不用Jedis改用Lucence
+
+JSch是Java Secure Channel的缩写。
+JSch是一个SSH2的纯Java实现。
+允许你连接到一个SSH服务器，并且可以使用端口转发，X11转发，文件传输等，当然你也可以集成它的功能到你自己的应用程序。
+
+prometheus是kubernate集群监控的客户端
+
+OncePerRequestFilter，能够确保在一次请求只通过一次filter，而不需要重复执行。
+
+
+
+
+
+
+
+
+
+

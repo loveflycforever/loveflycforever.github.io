@@ -1,0 +1,245 @@
+影响数据库查询速度的因素
+sql查询速度
+服务器硬件
+网卡流量
+磁盘IO
+
+QPS：Queries Per Second，“每秒查询率”，是一台服务器每秒能够相应的查询次数，是对一个特定的查询服务器在规定时间内所处理流量多少的衡量标准。
+TPS：Transactions Per Second，“每秒事务数”，是软件测试结果的测量单位。客户机在发送请求时开始计时，收到服务器响应后结束计时，以此来计算使用的时间和完成的事务个数。
+
+    效率低下的sql导致超高的QPS与TPS。
+    并发量指同一时刻数据库服务器处理的请求数量，大量的并发导致数据连接数被占满（max_connection默认100，一般把连接数设置得大一些）。
+    超高的CPU使用率导致CPU资源耗尽出现宕机。
+
+    磁盘IO：磁盘IO性能突然下降、大量消耗磁盘性能的计划任务。解决：更快磁盘设备、调整计划任务、做好磁盘维护。
+
+避免无法连接数据库的情况
+	分离业务网络和服务器网络
+	减少从服务器的数量（从服务器会从主服务器复制日志）
+	进行分级缓存
+	避免使用select * 进行查询
+	
+大表的特点
+    记录行数巨大，单表超千万
+    表数据文件巨大，超过10个G
+	
+	慢查询
+		很难在短时间内过滤出需要的数据，查询字区分度低，需要在大数据量的表中筛选出来其中一部分数据，会产生大量的磁盘IO，因此降低磁盘效率
+	建立索引时间长
+		MySQL5.5以下版本建立索引会锁表，在此之上的版本建立索引会造成主从延迟（MySQL建立索引，先在组上执行，再在库上执行）
+	修改表结构长时间的锁表
+		会造成长时间的主从延迟('480秒延迟')
+
+分库分表，把一张大表分成多个小表，需要考虑分表主键的选择和分表后跨分区数据的查询和统计
+
+
+
+未提交读(READ UNCOMMITED) 会导致脏读，两个事务之间互相可见
+已提交读(READ COMMITED)符合隔离性的基本概念，一个事务进行时，其它已提交的事物对于该事务是可见的，即可以获取其它事务提交的数据
+可重复读(REPEATABLE READ) InnoDB的默认隔离等级，事务进行时，其它所有事务对其不可见，即多次执行读，得到一样的结果是
+可串行化(SERIALIZABLE)在读取的每一行数据上都加锁，会造成大量的锁超时和锁征用，严格数据一致性且没有并发是可使用
+
+查看系统的事务隔离级别
+show variables like '%iso%';
+开启一个新事务：begin;
+提交一个事务：commit;
+修改事物的隔离级别
+set session tx_isolation='read-committed';
+		
+支持事务所需要的两个特殊日志类型：Redo Log 和Undo Log
+    Redo Log：实现事务的持久性(已提交的事务)。
+    Undo Log：未提交的事务，独立于表空间，需要随机访问，可以存储在高性能io设备上。
+
+运行时间长，操作数据比较多的事务，称为大事务，执行时间长，锁定数据太多，回滚时间长，且数据仍然会处于锁定，并且会造成主从延迟，因为主服务器全部执行完写入日志从服务器才会开始进行同步。
+应该避免一次处理太多数据，可以分批次处理，并且移出不必要的SELECT操作，保证事务中只有必要的写操作。
+		
+MySQL的存储引擎是针对表的，不是针对库的，在一个数据库中可以使用不同的存储引擎
+
+表空间存储数据，show variables like 'innodb_file_per_table，为 ON 将建立独立的表空间，文件为tablename.ibd；为 OFF 将数据存储到系统的共享表空间，文件为ibdataX（X为从1开始的整数）；
+MySQL5.5默认共享表空间，5.6及以后默认独立表空间
+独立表空间可以通过optimeze table 收缩系统文件，不需要重启服务器也不会影响对表的正常访问，共享表空间无法简单的收缩文件大小，造成空间浪费，并会产生大量的磁盘碎片。
+共享表空间对多个表进行刷新时，实际上是顺序进行的，会产生IO瓶颈，独立表空间可以同时向多个文件刷新数据。
+.frm文件，是服务器层面产生的文件，类似服务器层的数据字典，记录表结构。
+
+InnoDB支持行级锁，行级锁可以最大程度地支持并发，行级锁是由存储引擎层实现的。
+
+MySQL的事务支持不是绑定在MySQL服务器本身，而是与存储引擎相关
+
+将table_name加表级锁命令：lock table table_name write; 写锁会阻塞其它用户对该表的‘读写’操作，直到写锁被释放：unlock tables；
+
+锁的开销越大，粒度越小，并发度越高，表级锁通常是在服务器层实现的，行级锁是由存储引擎层实现的。
+
+MySQL的每个连接单独使用的内存
+sort_buffer_size #定义了每个线程排序缓存区的大小，MySQL在有查询、需要做排序操作时才会为每个缓冲区分配内存（直接分配该参数的全部内存）；
+join_buffer_size #定义了每个线程所使用的连接缓冲区的大小，如果一个查询关联了多张表，MySQL会为每张表分配一个连接缓冲，导致一个查询产生了多个连接缓冲；
+read_buffer_size #定义了当对一张MyISAM进行全表扫描时所分配读缓冲池大小，MySQL有查询需要时会为其分配内存，其必须是4k的倍数；
+read_rnd_buffer_size #索引缓冲区大小，MySQL有查询需要时会为其分配内存，只会分配需要的大小。
+
+Innodb_buffer_pool_size，定义了Innodb所使用缓存池的大小，对其性能十分重要，必须足够大，但是过大时，使得Innodb 关闭时候需要更多时间把脏页从缓冲池中刷新到磁盘中；
+key_buffer_size，定义了MyISAM所使用的缓存池的大小，由于数据是依赖存储操作系统缓存的，所以要为操作系统预留更大的内存空间；
+
+max_connections 控制允许的最大连接数， 一般2000更大。
+
+MySQL是单进程多线程（而oracle是多进程）
+MySQL实例是线程和内存组成，实例才是真正用于操作数据库文件的；一般情况下一个实例操作一个或多个数据库；集群情况下多个实例操作一个或多个数据库。
+
+总内存-（每个线程所需要的内存*连接数）-系统保留内存
+
+即使开发使用的表全部是Innodb表，也要为MyISAM预留内存，因为MySQL系统使用的表仍然是MyISAM表。
+
+三范式
+1NF是对属性的原子性，要求属性具有原子性，不可再分解
+2NF是对记录的惟一性，要求记录有惟一标识，即实体的惟一性，即不存在部分依赖
+3NF是对字段的冗余性，要求任何字段不能由其他字段派生出来，它要求字段没有冗余，即不存在传递依赖
+
+数据库结构优化目的
+	减少数据冗余
+	避免数据维护中出现更新，插入和删除异常
+	节约数据存储空间
+	提高查询效率
+
+当一个列可以选择多种数据类型时，应该优先考虑数字类型，其次时日期或二进制类型，最后是字符串类型
+对于相同级别的数据类型，应该优先选择占用空间小的数据类型
+
+FLOAT 4个字节 
+DOUBLE 8个字节
+DECIMAL 每四个字节存9个数字，小数点占1个字节，是精确类型，DECIMAL(18, 9) 需要9个字节来存储
+
+数值数据类型，正负之分(UNSIGNED属性可以禁止负数，取值从0开始)，零填补(ZEROFILL)
+
+INNODB 主键，应该尽可能小，应该顺序增长的，主键和业务主键可以不同
+
+一个英文字符 占用一个字节;
+汉字：字符类型若为gbk，每个字符最多占2个字节；字符类型若为utf8，每个字符最多占3个字节。
+
+在不能确定字段需要多少字符时使用 VARCHAR类型可以大大地节约磁盘空间、提高存储效率。但如果确切知道字符串长度,比如就在50~55之间,那就用 CHAR 因为 CHAR 类型由于本身定长的特性使其性能要高于 VARCHAR;
+
+DATE 3字节 1000-01-01 到 9999-123-31
+TIME 3字节 -838:59:59 到 838:59:59
+YEAR 1字节 1901 到 2155
+DATETIME 8字节 1000-01-01 00:00:00 到 9999-12-31 23:59:59
+TIMESTAMP 8字节 1970-01-01 00:00:00 到 2037年某时
+
+5.0版本以上，varchar(20)，指的是20字符，无论存放的是数字、字母还是UTF8汉字（每个汉字3字节），都可以存放20个，最大大小是65532字节，减1的原因是实际行存储从第二个字节开始’;减2的原因是varchar头部的2个字节表示长度;
+字符类型若为gbk，每个字符最多占2个字节，最大长度不能超过32766;
+字符类型若为utf8，每个字符最多占3个字节，最大长度不能超过21845。
+
+关于手机号，推荐用char(11),char(11)在查询上更有效率，因为手机号是一个活跃字段参与逻辑会很多
+
+索引大大减少了存储引擎需要扫描的数据量
+索引可以帮助我们进行排序以避免使用临时表
+索引可以把随机I/O变为顺序I/O
+
+对于列的值较长，比如BLOB、TEXT、VARCHAR，就必须建立前缀索引
+ALTER TABLE table_name ADD KEY(column_name(prefix_length))
+
+选择索引列的顺序：
+	经常会被使用到的列优先（选择性差的列不适合，如性别，查询优化器可能会认为全表扫描性能更好）；
+	选择性高的列优先；
+	宽度小的列优先（一页中存储的索引越多，降低I/O，查找越快）；
+
+当无法使用索引列，增大max_length_for_sort_data参数的设置和增大sort_buffer_size参数的设置；
+
+where 高于having，能写在where限定的条件就不要去having去限定
+
+explain 查询计划
+Using where：表示优化器需要通过索引回表查询数据；
+Using index：表示直接访问索引就足够获取到所需要的数据，不需要通过索引回表，如覆盖索引；
+
+慢查日志分析，相关配置参数：
+slow_query_log # 启动停止记录慢查日志，慢查询日志默认是没有开启的可以在配置文件中开启(on)
+slow_query_log_file # 指定慢查日志的存储路径及文件，日志存储和数据从存储应该分开存储
+long_query_time # 指定记录慢查询日志SQL执行时间的阀值默认值为10秒通常,对于一个繁忙的系统来说,改为0.001秒(1毫秒)比较合适
+log_queries_not_using_indexes #是否记录未使用索引的SQL
+常用工具：mysqldumpslow和pt-query-digest
+pt-query-digest --explain h=127.0.0.1,u=root,p=p@ssWord  slow-mysql.log
+
+实时获取有性能问题的SQL
+SELECT id,user,host,DB,command,time,state,info
+FROM information_schema.processlist
+WHERE TIME>=60
+
+MySql查询执行的大致过程
+    发送SQL语句。
+    查询缓存，如果命中缓存直接返回结果。
+    SQL解析，预处理，再由优化器生成对应的查询执行计划。
+    执行查询，调用存储引擎API获取数据。
+    返回结果。
+
+在一个读写比较频繁的系统中，建议关闭缓存，因为缓存更新会加锁。将query_cache_type设置为off,query_cache_size设置为0。
+
+一条查询可以有多种查询方式，查询优化器会对每一种查询方式的（存储引擎）统计信息进行比较，找到成本最低的查询方式，这也就是索引不能太多的原因。
+
+会造成MySQL生成错误的执行计划的原因
+	1、统计信息不准确
+    2、成本估算与实际的执行计划成本不同
+	3、给出的最优执行计划与估计的不同
+	4、MySQL不考虑并发查询
+    5、会基于固定规则生成执行计划
+    6、MySQL不考虑不受其控制的成本，如存储过程，用户自定义函数
+
+MySQL优化器可优化的SQL类型
+	1、重新定义表的关联顺序；
+	2、将外连接转换为内连接；
+	3、使用等价变换规则；
+	4、优化count(),min(),max()；
+	5、将一个表达式转换为常数；
+	6、子查询优化；
+	7、提前终止查询，如发现一个不成立条件(如where id = -1)，立即返回一个空结果；
+	8、对in()条件进行优化；
+
+启动监控和历史记录表：use performance_schema
+update setup_instruments set enabled='YES',TIME = 'YES' WHERE NAME LIKE 'stage%';
+update set_consumbers set enabled='YES',TIME = 'YES' WHERE NAME LIKE 'event%';
+
+大表的结构修改，利用主从复制，先对从服务器进入修改，然后主从切换
+或者
+添加一个新表（修改后的结构），老表数据导入新表，老表建立触发器，修改数据同步到新表， 老表加一个排它锁（重命名）， 新表重命名， 删除老表。
+或者利用工具修改，pt-online-schema-change
+
+优化not in 和 <> 查询，可以将子查询改写为关联查询
+
+MaxScale可以方便的帮助实现MySQL集群的读写分离和负载均衡的基础需求
+配置 MaxScale，需要在 master 中为 MaxScale 创建两个用户，用于监控模块和路由模块。
+创建监控用户
+mysql> create user scalemon@'%' identified by "111111";
+mysql> grant replication slave, replication client on *.* to scalemon@'%';
+创建路由用户 
+mysql> create user maxscale@'%' identified by "111111";
+mysql> grant select on mysql.* to maxscale@'%';
+开始配置
+vi /etc/maxscale.cnf
+[server1] 部分，修改其中的 address 和 port，指向 master 的 IP 和端口。复制 [server1] 的整块儿内容，改为 [server2] 与 [server3]，同样修改其中的 address 和 port，分别指向 slave1 和 slave2：
+[MySQL Monitor] 部分，修改 servers 为 server1,server2,server3，修改 user 和 passwd 为之前创建的监控用户的信息（scalemon,111111）。
+[Read-Write Service] 部分，修改 servers 为 server1,server2,server3，修改 user 和 passwd 为之前创建的路由用户的信息（maxscale,111111）。
+使用了 [Read-Write Service]，需要删除另一个服务 [Read-Only Service]，删除其整块内容。
+执行启动命令 maxscale --config=/etc/maxscale.cnf
+查看 MaxScale 的响应端口，4006 是连接 MaxScale 时使用的端口，6603 是 MaxScale 管理器的端口
+netstat -ntelp
+登录 MaxScale 管理器，查看一下数据库连接状态，默认的用户名和密码是 admin/mariadb。
+maxadmin --user=admin --password=mariadb
+MaxScale> list servers
+其他配置，日志 
+log_info=1
+logdir=/tmp/
+从服务器全部失效后，会导致 master 也无法识别，使整个数据库服务都失效了。
+当 MaxScale 需要一个稳定的 master时，需要修改 MaxScale 的配置
+[MySQL Monitor] 部分，添加：detect_stale_master=true
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
