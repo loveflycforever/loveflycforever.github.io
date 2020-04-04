@@ -1,21 +1,32 @@
 ﻿---
 layout: post
 title:  "Java 基础知识"
-subtitle: "面试题 Part 1"
-tags: [Java]
+subtitle: "面试 Part 1 基础知识"
+tags: [Java, Interview]
 comments: true
 ---
 1. 八种基本数据类型、字节数，以及它们的封装类
 
-int(4字节)、short(2字节)、float(4字节)、double(8字节)、long(8字节)、byte(1字节)、boolean(4字节或者1字节)、char(2字节)；
+int(4字节)、short(2字节)、float(4字节)、double(8字节)、long(8字节)
+
+byte(1字节)、boolean(4字节或者1字节)
+
+char(2字节)
 
 Number[Integer、Short、Float、Double、Long、Byte]、Boolean、Character。
+
+> 理论上 boolean 仅需1位（bit）即可存储，但计算机处理数据的最小单位是1个字节，1个字节等于8位，实际存储的空间是：用1个字节的最低位存储，其他7位用0填补
+> Java规范中，没有明确指出boolean的大小。
+> 在Java虚拟机中没有任何供boolean值专用的字节码指令，Java语言表达式所操作的boolean值，在编译之后都使用Java虚拟机中的int数据类型来代替，而boolean数组将会被编码成Java虚拟机的byte数组，每个元素boolean元素占8位”。也就是说JVM规范指出boolean当做int处理，也就是4字节，boolean数组当做byte数组处理，这样我们可以得出boolean类型占了单独使用是4个字节，在数组中是确定的1个字节。
+> 那虚拟机为什么要用int来代替boolean呢？为什么不用byte或short，这样不是更节省内存空间吗。经过查阅资料发现，使用int的原因是，对于当下32位的处理器（CPU）来说，一次处理数据是32位（这里不是指的是32/64位系统，而是指CPU硬件层面），32 位 CPU 使用 4 个字节是最为节省的，哪怕你是 1 个 bit 他也是占用 4 个字节。因为 CPU 寻址系统只能 32 位 32 位地寻址，具有高效存取的特点。
+> 在《Java虚拟机规范》给出了4个字节，和boolean数组1个字节的定义，具体还要看虚拟机实现是否按照规范来，所以1个字节、4个字节都是有可能的。
 
 2. 引用数据类型
 
 类、接口类型、数组类型、枚举类型、注解类型
 
-基本数据类型和引用类型的区别主要在于基本数据类型是分配在栈上的，而引用类型是分配在堆上的（需要java中的栈、堆概念），
+基本数据类型和引用类型的区别主要在于基本数据类型是分配在栈上的，
+而引用类型是分配在堆上的（涉及Java中的栈、堆概念）。
 
 3. `switch`能否用string做参数
 
