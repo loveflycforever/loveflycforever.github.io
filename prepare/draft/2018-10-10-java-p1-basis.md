@@ -91,17 +91,17 @@ u1、u2、u4 类型，分别表示1个字节，2个字节和4个字节。
 
 javap分析class文件用法：javap -verbose class文件名
 
-6. Object有哪些公用方法
-Object是所有类的父类，任何类都默认继承Object。
+6. `Object`有哪些公用方法
+`Object`是所有类的父类，任何类都默认继承`Object`。
 
 `clone()`
-保护方法，实现对象的浅复制，只有实现了Cloneable接口才可以调用该方法，否则抛出`CloneNotSupportedException`异常
+保护方法，实现对象的浅复制，只有实现了`Cloneable`接口才可以调用该方法，否则抛出`CloneNotSupportedException`异常
 
 `equals()`
-在Object中与==是一样的，子类一般需要重写该方法
+在`Object`中`equals()`与`==`是一样的，子类一般需要重写该方法
 
 `hashCode()`
-该方法用于哈希查找，重写了`equals`方法一般都要重写`hashCode`方法。这个方法在一些具有哈希功能的`Collection`中用到
+该方法用于哈希查找，重写了`equals()`方法一般都要重写`hashCode()`方法。这个方法在一些具有哈希功能的`Collection`中用到
 
 `getClass()`
 final方法，获得运行时类型
@@ -153,13 +153,14 @@ PhantomReference<T> ref = new PhantomReference<T>(new T(), queue);
 8. Hashcode的作用
 9. HashMap的hashcode的作用
 10. 为什么重载hashCode方法？
-hashCode方法的主要作用是为了配合基于散列的集合一起正常运行。
-put方法是用来向HashMap中添加新的元素，从put方法的具体实现可知，会先调用hashCode方法得到该元素的hashCode 值，然后查看table中是否存在该hashCode值，如果存在则调用equals方法重新确定是否存在该元素，如果存在，则更新value值，否则将 新的元素添加到HashMap中。
-在重写equals方法的同时，必须重写hashCode方法。
+`hashCode()`方法的主要作用是为了配合基于散列的集合一起正常运行。
+
+`put()`方法是用来向`HashMap`中添加新的元素，从`put()`方法的具体实现可知，会先调用`hashCode()`方法得到该元素的哈希值（hashCode），然后查看table中是否存在该哈希值，如果存在则调用`equals()`方法重新确定是否存在该元素，如果存在，则更新value值，否则将 新的元素添加到`HashMap`中。
+所以在重写`equals()`方法的同时，必须重写`hashCode()`方法。
 
 11. ArrayList、LinkedList、Vector的区别
 用Iterator实现单向遍历，也可用ListIterator实现双向遍历
-Arraylist和Vector是采用数组方式存储数据，此数组元素数大于实际存储的数据以便增加插入元素，都允许直接序号索引元素，但是插入数据要涉及到数组元素移动等内存操作，所以插入数据慢，查找有下标，所以查询数据快，
+ArrayList和Vector是采用数组方式存储数据，此数组元素数大于实际存储的数据以便增加插入元素，都允许直接序号索引元素，但是插入数据要涉及到数组元素移动等内存操作，所以插入数据慢，查找有下标，所以查询数据快，
 Vector由于使用了synchronized方法-线程安全，所以性能上比ArrayList要差，
 LinkedList使用双向链表实现存储，按序号索引数据需要进行向前或向后遍历，但是插入数据时只需要记录本项前后项即可，插入数据较快。
 
@@ -184,7 +185,7 @@ Collection
   └ TreeSet
   
 Map
-├Hashtable
+├HashTable
 ├HashMap
 │├ LinkedHashMap
 │└ WeakHashMap
@@ -194,13 +195,13 @@ Map
 14. HashMap和HashTable的区别
 15. JDK7与JDK8中HashMap的实现
 JDK7
-JDK7中HashMap采用的是位桶+链表的方式
+JDK7中HashMap采用的是 位桶 + 链表 的方式
 HashMap底层维护一个数组，数组中的每一项都是一个Entry
-当向 HashMap 中 put 一对键值时，它会根据 key的 hashCode 值计算出一个位置， 该位置就是此对象准备往数组中存放的位置。
+当向 HashMap 中 put 一对键值时，它会根据 key 的 hashCode 值计算出一个位置， 该位置就是此对象准备往数组中存放的位置。
 如果该位置没有对象存在，就将此对象直接放进数组当中；如果该位置已经有对象存在了，则顺着此存在的对象的链开始寻找(为了判断是否是否值相同，map不允许<key,value>键值对重复)， 如果此链上有对象的话，再去使用 equals方法进行比较，如果对此链上的每个对象的 equals 方法比较都为 false，则将该对象放到数组当中，然后将数组中该位置以前存在的那个对象链接到此对象的后面。
 当key为null时，都放到table[0]中
 JDK8
-JDK8中采用的是位桶+链表/红黑树的方式
+JDK8中采用的是 位桶 + 链表/红黑树 的方式
 JDK中Entry的名字变成了Node，原因是和红黑树的实现TreeNode相关联。
 当冲突节点数不小于8-1时，转换成红黑树。
 JDK8中，当同一个hash值的节点数不小于8时，将不再以单链表的形式存储了，会被调整成一颗红黑树。是JDK7与JDK8中HashMap实现的最大区别。
@@ -240,7 +241,7 @@ Map map = Collections.synchronizedMap(new HashMap());
 20. 多并发情况下HashMap是否还会产生死循环
 JDK8中使用了红黑树node复制节点时将其放在原节点之后，不像之前的链表放在之前，所以不会发生死锁
 
-21. TreeMap、HashMap、LindedHashMap的区别
+21. TreeMap、HashMap、LinkedHashMap的区别
 HashMap里面存入的键值对在取出的时候是随机的,它根据键的HashCode值存储数据,根据键可以直接获取它的值，具有很快的访问速度。
 LinkedHashMap保存了记录的插入顺序（迭代器顺序），在用Iterator遍历LinkedHashMap时，先得到的记录肯定是先插入的.也可以在构造时用带参数，按照应用次数排序。
 LinkedHashMap遍历的时候会比HashMap慢，LinkedHashMap的遍历速度只和实际数据有关，和容量无关，而HashMap的遍历速度和他的容量有关。当HashMap容量很大，实际数据较少时，遍历起来可能会比LinkedHashMap慢。
@@ -271,7 +272,7 @@ Collection 单列集合
   └ TreeSet 线程不安全，可以对Set集合中的元素进行排序。通过compareTo或者compare方法中的来保证元素的唯一性。元素是以二叉树的形式存放的。
   
 Map 双列集合
-├Hashtable 线程安全，速度快。底层是哈希表数据结构。是同步的。不允许null作为键或者值。
+├HashTable 线程安全，速度快。底层是哈希表数据结构。是同步的。不允许null作为键或者值。
 │├ Properties 用于配置文件的定义和操作，使用频率非常高，同时键和值都是字符串。是集合中可以和IO技术相结合的对象。
 ├HashMap 线程不安全，速度慢。底层也是哈希表数据结构。是不同步的。允许null作为键或者值。替代了Hashtable.
 │├ LinkedHashMap 可以保证HashMap集合有序。存入的顺序和取出的顺序一致。
@@ -299,7 +300,7 @@ Collections是针对集合类的一个帮助类，提供了操作集合的工具
 23. try-catch-finally，try里有return，finally还执行么
 在finally里面是不能执行return语句的，如果在finally中使用了return，则会提示这样的错误：“控制不能离开 finally子句主体”。
 
-24. Excption与Error包结构，OOM你遇到过哪些情况，SOF你遇到过哪些情况
+24. Exception与Error包结构，OOM你遇到过哪些情况，SOF你遇到过哪些情况
 Throwable
 ├Exception
 │└RuntimeException
@@ -316,7 +317,7 @@ SOF 堆栈溢出 StackOverflow
 方法的重写(Overriding)和重载(Overloading)是Java多态性的不同表现。   
 重写(Overriding)是父类与子类之间多态性的一种表现，而重载(Overloading)是一个类中多态性的一种表现。
 
-27. Interface与abstract类的区别
+27. interface与Abstract类的区别
 abstract class和interface是支持抽象类定义的两种机制。
   抽象类可以有构造方法，接口中不能有构造方法。
   抽象类中可以有普通成员变量，接口中没有普通成员变量
@@ -356,34 +357,48 @@ JVM 的方法调用指令有四个，分别是 invokestatic，invokespecial，in
   
 31. Java IO与NIO
 java.NIO包里包括三个基本的组件
-├buffer：因为NIO是基于缓冲的，所以buffer是最底层的必要类，这也是IO和NIO的根本不同，虽然stream等有buffer开头的扩展类，但只是流的包装类，还是从流读到缓冲区，而NIO却是直接读到buffer中进行操作。因为读取的都是字节，所以在操作文字时，要用charset类进行编解码操作。
-├channel：类似于IO的stream，但是不同的是除了FileChannel，其他的channel都能以非阻塞状态运行。FileChannel执行的是文件的操作，可以直接DMA操作内存而不依赖于CPU。其他比如socketchannel就可以在数据准备好时才进行调用。
-└selector：用于分发请求到不同的channel，这样才能确保channel不处于阻塞状态就可以收发消息。
+
+├ buffer：因为NIO是基于缓冲的，所以buffer是最底层的必要类，这也是IO和NIO的根本不同，虽然stream等有buffer开头的扩展类，但只是流的包装类，还是从流读到缓冲区，而NIO却是直接读到buffer中进行操作。因为读取的都是字节，所以在操作文字时，要用charset类进行编解码操作。
+
+├ channel：类似于IO的stream，但是不同的是除了FileChannel，其他的channel都能以非阻塞状态运行。FileChannel执行的是文件的操作，可以直接DMA操作内存而不依赖于CPU。其他比如socketchannel就可以在数据准备好时才进行调用。
+
+└ selector：用于分发请求到不同的channel，这样才能确保channel不处于阻塞状态就可以收发消息。
+
 Java NIO和IO之间的区别是，IO是面向流的，NIO是面向缓冲区的。
+  
   Java IO面向流意味着每次从流中读一个或多个字节，直至读取所有字节，它们没有被缓存在任何地方。此外，它不能前后移动流中的数据。如果需要前后移动从流中读取的数据，需要先将它缓存到一个缓冲区。
+  
   Java NIO的缓冲导向方法略有不同。数据读取到一个它稍后处理的缓冲区，需要时可在缓冲区中前后移动。这就增加了处理过程中的灵活性。但是，还需要检查是否该缓冲区中包含所有您需要处理的数据。而且，需确保当更多的数据读入缓冲区时，不要覆盖缓冲区里尚未处理的数据。
+
 Java NIO和IO之间的区别是，IO是阻塞IO，NIO是非阻塞IO。
+
   Java IO的各种流是阻塞的，当一个线程调用read() 或 write()时，该线程被阻塞，直到有一些数据被读取，或数据完全写入。该线程在此期间不能再干任何事情了。
-  Java NIO的非阻塞模式，使一个线程从某通道发送请求读取数据，但是它仅能得到目前可用的数据，如果目前没有数据可用时，就什么都不会获取。而不是保持线程阻塞，所以直至数据变的可以读取之前，该线程可以继续做其他的事情。 非阻塞写也是如此。一个线程请求写入一些数据到某通道，但不需要等待它完全写入，这个线程同时可以去做别的事情。 线程通常将非阻塞IO的空闲时间用于在其它通道上执行IO操作，所以一个单独的线程现在可以管理多个输入和输出通道（channel）。
+  
+  Java NIO的非阻塞模式，使一个线程从某通道发送请求读取数据，但是它仅能得到目前可用的数据，如果目前没有数据可用时，就什么都不会获取。而不是保持线程阻塞，所以直至数据变的可以读取之前，该线程可以继续做其他的事情。 
+  非阻塞写也是如此。一个线程请求写入一些数据到某通道，但不需要等待它完全写入，这个线程同时可以去做别的事情。 线程通常将非阻塞IO的空闲时间用于在其它通道上执行IO操作，所以一个单独的线程现在可以管理多个输入和输出通道（channel）。
+
 Java NIO和IO之间的区别是，NIO有选择器的概念。
+  
   Java NIO的选择器允许一个单独的线程来监视多个输入通道，你可以注册多个通道使用一个选择器，然后使用一个单独的线程来“选择”通道：这些通道里已经有可以处理的输入，或者选择已准备写入的通道。这种选择机制，使得一个单独的线程很容易来管理多个通道。
+
 NIO的buffer可以使用直接内存缓冲区，该缓冲区不在JVM中，性能会比JVM的缓冲区略好，不过会增加相应的垃圾回收的负担，因为JVM缓冲区的性能已经足够好，所以除非在对缓冲有特别要求的地方使用直接缓冲区，尽量使用JVM缓冲。
 在老的IO包中，serverSocket和socket都是阻塞式的，因此一旦有大规模的并发行为，而每一个访问都会开启一个新线程。这时会有大规模的线程上下文切换操作（因为都在等待，所以资源全都被已有的线程吃掉了），这时无论是等待的线程还是正在处理的线程，响应率都会下降，并且会影响新的线程。
 NIO包中的serverSocket和socket就不是这样，只要注册到一个selector中，当有数据放入通道的时候，selector就会得知哪些channel就绪，这时就可以做响应的处理，这样服务端只有一个线程就可以处理大部分情况（当然有些持续性操作，比如上传下载一个大文件，用NIO的方式不会比IO好）。
-Open ServerSocket -> Accept Connection -> Read Request -> Send Response -> Close Connection  ┐
-                                                ^───────────────────────────────────────────────┘
+Open ServerSocket -> Accept Connection -> Read Request -> Send Response -> Close Connection ┐
+                                            ^───────────────────────────────────────────────┘
 首先创建ServerSocket server=new ServerSocket（10000）；
 然后接受新的连接请求Socket newConnection=server.accept（）；
 对于accept方法的调用将造成阻塞，直到ServerSocket接受到一个连接请求为止。一旦连接请求被接受，服务器可以读客户socket中的请求。 
-读取过程中，首先BufferedReader类的readLine（）方法在其缓冲区未满时会造成线程阻塞，只有一定数据填满了缓冲区或者客户关闭了套接字，方法才会返回。其次，它回产生大量的垃圾，BufferedReader创建了缓冲区来从客户套接字读入数据，但是同样创建了一些字符串存储这些数据。虽然BufferedReader内部提供了StringBuffer处理这一问题，但是所有的String很快变成了垃圾需要回收。
+读取过程中，首先BufferedReader类的readLine（）方法在其缓冲区未满时会造成线程阻塞，只有一定数据填满了缓冲区或者客户关闭了套接字，方法才会返回。
+其次，它回产生大量的垃圾，BufferedReader创建了缓冲区来从客户套接字读入数据，但是同样创建了一些字符串存储这些数据。虽然BufferedReader内部提供了StringBuffer处理这一问题，但是所有的String很快变成了垃圾需要回收。
 同样的问题在发送响应代码中也存在，类似的，读写操作被阻塞而且向流中一次写入一个字符会造成效率低下，所以应该使用缓冲区，但是一旦使用缓冲，流又会产生更多的垃圾。
 传统的解决方法，通常在Java中处理阻塞I/O要用到线程（大量的线程）。一般是实现一个线程池用来处理请求
 Master Thread
 Open ServerSocket -> Accept Connection -> Dispatch to waiting Thread ┐
-                                                ^─────────────────┿──────────┘
-Worker Thread  ┍────────────────────────────┘
+                                        ^─────────────────┿──────────┘
+Worker Thread  ┍──────────────────────────────────────────┘
 Wait for Dispatch -> Read Request -> Send Response -> Close Connection  ┐
-           ^───────────────────────────────────────────────┘
+                        ^───────────────────────────────────────────────┘
 线程使得服务器可以处理多个连接，但是它们也同样引发了许多问题。每个线程拥有自己的栈空间并且占用一些CPU时间，耗费很大，而且很多时间是浪费在阻塞的I/O操作上，没有有效的利用CPU。
 
 32. java反射的作用于原理
