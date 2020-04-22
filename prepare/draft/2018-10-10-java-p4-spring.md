@@ -1,6 +1,6 @@
 1. IOC和DI是什么？
-IOC（控制反转）：全称为：Inverse of Control。从字面上理解就是控制反转了，将对在自身对象中的一个内置对象的控制反转，反转后不再由自己本身的对象进行控制这个内置对象的创建，而是由第三方系统去控制这个内置对象的创建。
-DI（依赖注入）：全称为Dependency Injection，意思自身对象中的内置对象是通过注入的方式进行创建。
+IOC（控制反转）：全称为 Inverse of Control。从字面上理解就是控制反转了，将对在自身对象中的一个内置对象的控制反转，反转后不再由自己本身的对象进行控制这个内置对象的创建，而是由第三方系统去控制这个内置对象的创建。
+DI（依赖注入）：全称为 Dependency Injection，意思自身对象中的内置对象是通过注入的方式进行创建。
 简单来说就是把本来在类内部控制的对象，反转到类外部进行创建后注入，不再由类本身进行控制，这就是IOC的本质。
 
 2. Spring IOC 的理解，其初始化过程？
@@ -15,12 +15,12 @@ public interface ApplicationContext extends EnvironmentCapable,
 　　　　　　　　　　　　　　　　　　MessageSource, 
 　　　　　　　　　　　　　　　　　　ApplicationEventPublisher,
 　　　　　　　　　　　　　　　　　　ResourcePatternResolver // 继承ResourceLoader，用于获取resource对象
-在BeanFactory子类中有一个DefaultListableBeanFactory类，它包含了基本Spirng IoC容器所具有的重要功能，开发时不论是使用BeanFactory系列还是ApplicationContext系列来创建容器基本都会使用到DefaultListableBeanFactory类，可以这么说，在spring中实际上把它当成默认的IoC容器来使用。
+在BeanFactory子类中有一个DefaultListableBeanFactory类，它包含了基本Spring IoC容器所具有的重要功能，开发时不论是使用BeanFactory系列还是ApplicationContext系列来创建容器基本都会使用到DefaultListableBeanFactory类，可以这么说，在spring中实际上把它当成默认的IoC容器来使用。
 第一步 Resource定位
 即BeanDefinition资源的定位，spring定义了一个Resource接口来定义资源，ResourceLoader负责资源的定位。
 常用的resource资源类型如下：
 　　FileSystemResource：以文件的绝对路径方式进行访问资源，效果类似于Java中的File;
-　　ClassPathResourcee：以类路径的方式访问资源，效果类似于this.getClass().getResource("/").getPath();
+　　ClassPathResource：以类路径的方式访问资源，效果类似于this.getClass().getResource("/").getPath();
 　　ServletContextResource：web应用根目录的方式访问资源，效果类似于request.getServletContext().getRealPath("");
 　　UrlResource：访问网络资源的实现类。例如file: http: ftp:等前缀的资源对象;
 　　ByteArrayResource: 访问字节数组资源的实现类。
@@ -29,7 +29,7 @@ public interface ApplicationContext extends EnvironmentCapable,
 通过BeanDefinition这个数据结构IoC容器能够方便的对POJO对象也就是Bean进行管理。
 BeanDefinition的载入分为两个过程，首先通过调用XML的解析器得到Document对象，但这些Document对象并没有按照spring定义的bean的规则进行解析；
 然后DocumentReader按照spring定义的bean的规则进行解析，默认的DocumentReader是DefaultBeanDefinitionDocumentReader。 
-第三步，将BeanDefiniton注册到容器中
+第三步，将BeanDefinition注册到容器中
 载入的BeanDefinition最终是通过一个HashMap来持有的，因此注册也就是把解析得到的BeanDefinition设置到HashMap中去。
 通过实现BeanDefinitionRegistry接口的方法registerBeanDefinition来注册BeanDefinition。
 
@@ -81,7 +81,7 @@ BeanFactory和FactoryBean其实没有什么比较性的，只是两者的名称�
 
 4. BeanFactory和ApplicationContext的区别？
 容器是spring的核心，使IoC管理所有和组件，spring的两种容器：BeanFactoy 和 ApplicationContext应用上下文
-BeanFacotry是spring中比较原始的Factory，是Spring里面最低层的接口，提供了最简单的容器的功能，只提供了实例化对象和拿对象的功能。如XMLBeanFactory就是一种典型的BeanFactory。
+BeanFactory是spring中比较原始的Factory，是Spring里面最低层的接口，提供了最简单的容器的功能，只提供了实例化对象和拿对象的功能。如XMLBeanFactory就是一种典型的BeanFactory。
 原始的BeanFactory无法支持spring的许多插件，如AOP功能、Web应用等。 
 ApplicationContext接口是一个BeanFactory基础上封装了更多功能的，Spring中最为常用的IoC容器，如资源/国际化支持/框架事件支持等
 其包含两个子接口：ConfigurableApplicationContext、WebApplicationContext。
@@ -129,7 +129,7 @@ Spring中ApplicationContext加载机制。
           org.springframework.web.context.ContextLoaderListener
      </listener-class> 
 </listener> 
-或： 
+或
 <servlet> 
        <servlet-name>context</servlet-name> 
        <servlet-class> 
@@ -195,26 +195,28 @@ Bean级生命周期接口方法
 Spring容器中还可以注册多个后处理器，只要他们都实现了Ordered接口，Spring容器就会按照特定的顺序依次调用这些后处理器。
 
 7. Spring AOP的实现原理？
-一种基于代理(Proxy)的实现方式
-Spring AOP有两种实现方式：
-    基于接口的动态代理(Dynamic Proxy)
-    基于子类化的CGLIB代理
-在jdk1.3以后，jdk跟我们提供了一个API java.lang.reflect.InvocationHandler的类
-动态代理实现主要是实现InvocationHandler，并且将目标对象注入到代理对象中，利用反射机制来执行目标对象的方法。
-public class MyInvoctionHandler implements InvocationHandler
+Spring AOP 基于代理（Proxy）的实现，有两种实现方式：
+- 基于接口的动态代理(Dynamic Proxy)
+- 基于子类化的CGLIB代理
+在jdk1.3以后，提供了一个 API`java.lang.reflect.InvocationHandler`的类，
+动态代理实现主要是实现`InvocationHandler`，并且将目标对象注入到代理对象中，利用反射机制来执行目标对象的方法。
+```
+public class MyInvocationHandler implements InvocationHandler
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
 SleepDao s=new SleepDaoImpl();
 ClassLoader classLoader=s.getClass().getClassLoader();
-MyInvoctionHandler myInvoctionHandler=new MyInvoctionHandler(s);
-SleepDao sd=(SleepDao) Proxy.newProxyInstance(classLoader, s.getClass().getInterfaces(), myInvoctionHandler);
+MyInvocationHandler myInvocationHandler = new MyInvocationHandler(s);
+SleepDao sd=(SleepDao) Proxy.newProxyInstance(classLoader, s.getClass().getInterfaces(), myInvocationHandler);
 sd.sleep();
+```
 CGlib代理
+```
 public class CglibProxy implements MethodInterceptor 
     public Object intercept(Object proxy, Method method, Object[] args, MethodProxy arg3) throws Throwable
 CglibProxy proxy=new CglibProxy();
 Base base=(Base) proxy.getProxy(new Base());
 base.sleep();
-
+```
 8. Spring 是如何管理事务的，事务管理机制？
 Spring的事务机制包括声明式事务和编程式事务。
 编程式事务管理：Spring推荐使用TransactionTemplate，实际开发中使用声明式事务较多。
