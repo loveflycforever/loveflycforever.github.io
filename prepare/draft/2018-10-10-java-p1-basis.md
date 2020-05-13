@@ -5,7 +5,7 @@ subtitle: "面试 Part 1 基础知识"
 tags: [Java, Interview]
 comments: true
 ---
-1. 八种基本数据类型、字节数，以及它们的封装类
+# 1. 八种基本数据类型、字节数，以及它们的封装类
 
 int(4字节)、short(2字节)、float(4字节)、double(8字节)、long(8字节)
 
@@ -15,7 +15,8 @@ char(2字节)
 
 Number[Integer、Short、Float、Double、Long、Byte]、Boolean、Character。
 
-> 因为jvm的字节码为了简洁高效，设计时只使用一个字节，导致命令的数量有限，不能为所有类型设计指令，byte、char、short、boolean这四种类型都使用int的指令。
+> 因为 JVM 的字节码为了简洁高效，设计时只使用一个字节，导致命令的数量有限，不能为所有类型设计指令，
+因此，byte、char、short、boolean这四种类型都使用int的指令。
 
 > 四种类型在汇编期或运行期间采取和int类型一样的存储方式，在计算时会先转换为int类型，后进行计算。
 
