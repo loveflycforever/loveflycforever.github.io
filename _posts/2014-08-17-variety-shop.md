@@ -848,3 +848,9 @@ python GIL，多线程并不能真正的并发。
 垃圾回收，这个可能是所有具有垃圾回收的编程语言的通病。python采用标记和分代的垃圾回收策略，每次垃圾回收的时候都会中断正在执行的程序，造成所谓的顿卡。
        
        
+**[872]** 出现org.apache.http.NoHttpResponseException: The target server failed to respond异常报警
+查看http服务端的nginx配置，发现设置了keepAlive 32s，也就是说当连接空闲超过32s时，服务端就会主动发起FIN请求，进入tcp关闭的四次挥手流程。由于httpclient没有主动关闭连接，导致连接处于半关闭状态，而连接还存在于连接池中，所以当下次再被取出来用时就会收到服务端的RST。
+
+1、通过PoolingHttpClientConnectionManager.setValidateAfterInactivity(evictIdle);设置连接空闲多久以后需要进行validate检查
+2、通过HttpClientBuilder.evictIdleConnections(evictIdle, TimeUnit.MILLISECONDS)设置连接空闲多久后将被清理出连接池。
+因此只要我们配置上这两个参数，保证它小于服务端保持连接的时间就可以了。
