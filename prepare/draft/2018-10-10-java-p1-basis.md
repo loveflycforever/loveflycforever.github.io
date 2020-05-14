@@ -175,23 +175,23 @@ StringBuffer：适用多线程下在字符缓冲区进行大量操作的情况
 
 13. Map、Set、List、Queue、Stack的特点与用法
 Collection
-├List
-│├LinkedList
-│├ArrayList
-│└Vector
-│　└Stack
-└Set
-  ├ HashSet
-  │ 　 └ LinkedHashSet
-  └ TreeSet
+ ├ List
+ │  ├ LinkedList
+ │  ├ ArrayList
+ │  └ Vector
+ │　   └Stack
+ └ Set
+    ├ HashSet
+    │  └ LinkedHashSet
+    └ TreeSet
   
 Map
-├HashTable
-├HashMap
-│├ LinkedHashMap
-│└ WeakHashMap
-├ TreeMap
-└ IdentifyHashMap
+ ├ HashTable
+ ├ HashMap
+ │  ├ LinkedHashMap
+ │  └ WeakHashMap
+ ├ TreeMap
+ └ IdentifyHashMap
 
 14. HashMap和HashTable的区别
 15. JDK7与JDK8中HashMap的实现
@@ -216,14 +216,20 @@ ConcurrentHashMap让锁的粒度更精细一些，并发性能更好。
 
 17. ConcurrentHashMap能完全替代HashTable吗
 HashTable是一个线程安全的类，它使用synchronized来锁住整张Hash表来实现线程安全，即每次锁住整张表让线程独占。
-ConcurrentHashMap允许多个修改操作并发进行，其关键在于使用了锁分离技术。它使用了多个锁来控制对hash表的不同部分进行的修改。ConcurrentHashMap内部使用段(Segment)来表示这些不同的部分，每个段其实就是一个小的Hashtable，它们有自己的锁。只要多个修改操作发生在不同的段上，它们就可以并发进行。
+ConcurrentHashMap允许多个修改操作并发进行，其关键在于使用了锁分离技术。它使用了多个锁来控制对hash表的不同部分进行的修改。ConcurrentHashMap内部使用段(Segment)来表示这些不同的部分，每个段其实就是一个小的HashTable，它们有自己的锁。只要多个修改操作发生在不同的段上，它们就可以并发进行。
 HashTable虽然性能上不如ConcurrentHashMap，但并不能完全被取代，两者的迭代器的一致性不同的，HashTable的迭代器是强一致性的，而ConcurrentHashMap是弱一致的。 ConcurrentHashMap的get，clear，iterator 都是弱一致性的。 
+
+
+> 并发队列中迭代器弱一致性原理
+> 并发队列里面的Iterators是弱一致性的，next返回的是队列某一个时间点或者创建迭代器时候的状态的反映。当创建迭代器后，其他线程删除了该元素时候并不会抛出java.util.ConcurrentModificationException异常，能够保持创建迭代器后的元素一定被正确的next出来。
+
 
 Segment下面包含很多个HashEntry列表数组。对于一个key，需要经过三次hash操作，才能最终定位这个元素的位置，这三次hash分别为：
 - 对于一个key，先进行一次hash操作，得到hash值h1，也即h1 = hash1(key)；
 - 将得到的h1的高几位进行第二次hash，得到hash值h2，也即h2 = hash2(h1高几位)，通过h2能够确定该元素的放在哪个Segment；
 - 将得到的h1进行第三次hash，得到hash值h3，也即h3 = hash3(h1)，通过h3能够确定该元素放置在哪个HashEntry。
-不lock所有的Segment，遍历所有Segment，累加各个Segment的大小得到整个Map的大小，如果某相邻的两次计算获取的所有Segment的更新的次数（每个Segment都有一个modCount变量，这个变量在Segment中的Entry被修改时会加一，通过这个值可以得到每个Segment的更新操作的次数）是一样的，说明计算过程中没有更新操作，则直接返回这个值。
+不lock所有的Segment，遍历所有Segment，累加各个Segment的大小得到整个Map的大小，
+如果某相邻的两次计算获取的所有Segment的更新的次数（每个Segment都有一个modCount变量，这个变量在Segment中的Entry被修改时会加一，通过这个值可以得到每个Segment的更新操作的次数）是一样的，说明计算过程中没有更新操作，则直接返回这个值。
 如果这三次不加锁的计算过程中Map的更新次数有变化，则之后的计算先对所有的Segment加锁，再遍历所有Segment计算Map大小，最后再解锁所有Segment。
 ConcurrentHashMap中的key和value值都不能为null，HashMap中key可以为null，HashTable中key不能为null。
 ConcurrentHashMap是线程安全的类并不能保证使用了ConcurrentHashMap的操作都是线程安全的！
@@ -262,22 +268,22 @@ Map<String,String> treeMap = new TreeMap<String,String>(new Comparator<String>()
 
 22. Collection包结构，与Collections的区别
 Collection 单列集合
-├List
-│├LinkedList 线程不安全，增删速度快。 底层数据结构是列表结构。
-│├ArrayList 线程不安全，查询速度快。 底层数据结构是数组结构。
-│└Vector 线程安全，但速度慢，已被ArrayList替代。底层数据结构是数组结构。
-│　└Stack
-└Set
-  ├ HashSet 线程不安全，存取速度快。依赖元素的hashCode方法和euqals方法保证元素唯一性。
-  │ 　 └ LinkedHashSet
-  └ TreeSet 线程不安全，可以对Set集合中的元素进行排序。通过compareTo或者compare方法中的来保证元素的唯一性。元素是以二叉树的形式存放的。
+ ├ List
+ │  ├ LinkedList 线程不安全，增删速度快。 底层数据结构是列表结构。
+ │  ├ ArrayList 线程不安全，查询速度快。 底层数据结构是数组结构。
+ │  └ Vector 线程安全，但速度慢，已被ArrayList替代。底层数据结构是数组结构。
+ │  　 └Stack
+ └ Set
+    ├ HashSet 线程不安全，存取速度快。依赖元素的hashCode方法和euqals方法保证元素唯一性。
+    │  └ LinkedHashSet
+    └ TreeSet 线程不安全，可以对Set集合中的元素进行排序。通过compareTo或者compare方法中的来保证元素的唯一性。元素是以二叉树的形式存放的。
   
 Map 双列集合
 ├HashTable 线程安全，速度快。底层是哈希表数据结构。是同步的。不允许null作为键或者值。
 │├ Properties 用于配置文件的定义和操作，使用频率非常高，同时键和值都是字符串。是集合中可以和IO技术相结合的对象。
-├HashMap 线程不安全，速度慢。底层也是哈希表数据结构。是不同步的。允许null作为键或者值。替代了Hashtable.
+├HashMap 线程不安全，速度慢。底层也是哈希表数据结构。是不同步的。允许null作为键或者值。替代了HashTable.
 │├ LinkedHashMap 可以保证HashMap集合有序。存入的顺序和取出的顺序一致。
-│└ WeakHashMap
+│└  
 ├ TreeMap 可以用来对Map集合中的键进行排序。
 └ IdentifyHashMap
 
@@ -358,11 +364,8 @@ JVM 的方法调用指令有四个，分别是 invokestatic，invokespecial，in
   
 31. Java IO与NIO
 java.NIO包里包括三个基本的组件
-
 ├ buffer：因为NIO是基于缓冲的，所以buffer是最底层的必要类，这也是IO和NIO的根本不同，虽然stream等有buffer开头的扩展类，但只是流的包装类，还是从流读到缓冲区，而NIO却是直接读到buffer中进行操作。因为读取的都是字节，所以在操作文字时，要用charset类进行编解码操作。
-
 ├ channel：类似于IO的stream，但是不同的是除了FileChannel，其他的channel都能以非阻塞状态运行。FileChannel执行的是文件的操作，可以直接DMA操作内存而不依赖于CPU。其他比如socketchannel就可以在数据准备好时才进行调用。
-
 └ selector：用于分发请求到不同的channel，这样才能确保channel不处于阻塞状态就可以收发消息。
 
 Java NIO和IO之间的区别是，IO是面向流的，NIO是面向缓冲区的。
@@ -422,17 +425,17 @@ class MyInvocationHandler implements InvocationHandler {
 
     public Object bind(Object obj) {
         this.obj = obj;
-       return Proxy.newProxyInstance(obj.getClass().getClassLoader(), obj
+        return Proxy.newProxyInstance(obj.getClass().getClassLoader(), obj
                 .getClass().getInterfaces(), this);
     }
 
-   @Override
+    @Override
     public Object invoke(Object proxy, Method method, Object[] args)
            throws Throwable {
        Object temp = method.invoke(this.obj, args);
         return temp;
      }
- }
+}
 
 MyInvocationHandler demo = new MyInvocationHandler();
 Subject sub = (Subject) demo.bind(new RealSubject());
