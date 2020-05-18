@@ -140,8 +140,18 @@ Java内存模型的两个关键概念：可见性（Visibility）和可排序性
 Java语言规范中提到过，JVM中存在一个主存区（Main Memory或Java Heap Memory），Java中所有变量都是存在主存中的，对于所有线程进行共享，而每个线程又存在自己的工作内存（Working Memory），工作内存中保存的是主存中某些变量的拷贝，线程对所有变量的操作并非发生在主存区，而是发生在工作内存中，而线程之间是不能直接相互访问，变量在程序中的传递，是依赖主存来完成的。而在多核处理器下，大部分数据存储在高速缓存中，如果高速缓存不经过内存的时候，也是不可见的一种表现。在Java程序中，内存本身是比较昂贵的资源，其实不仅仅针对Java应用程序，对操作系统本身而言内存也属于昂贵资源，Java程序在性能开销过程中有几个比较典型的可控制的来源。synchronized和volatile关键字提供的内存中模型的可见性保证程序使用一个特殊的、存储关卡（memory barrier）的指令，来刷新缓存，使缓存无效，刷新硬件的写缓存并且延迟执行的传递过程，无疑该机制会对Java程序的性能产生一定的影响。
 
 为什么1.5前的双重检查锁的单例模式有问题，引出为什么双重检查锁需要加volatile参数，
-问题在于instance = new Singleton3(); 并不是一个原子操作。分为分配内存（1）、初始化对象（2）、变量指向内存（3），第2步和第3步理论上没有先后关系，可能触发重排序
+问题在于instance = new Singleton3(); 并不是一个原子操作。分为分配内存（1）、初始化对象（2）、变量指向内存（3），第2步和第3步理论上没有先后关系，可能触发重排序 
 volatile语义为禁止指令重排序，变量读写变化直接显示在主内存内
+
+在多处理器下，为了保证各个处理器的缓存是一致的，就会实现缓存一致性协议，
+每个处理器通过嗅探在总线上传播的数据来检查自己缓存的值是不是过期了，当处理器发现自己缓存行对应的内存地址被修改，就会将当前处理器的缓存行设置成无效状态，
+当处理器对这个数据进行修改操作的时候，会重新从系统内存中把数据读到处理器缓存里。
+
+volatile 关键字提供内存屏障的方式来防止指令被重排，编译器在生成字节码文件时，会在指令序列中插入内存屏障来禁止特定类型的处理器重排序。
+内存屏障会确保指令重排序时不会把其后面的指令排到内存屏障之前的位置，也不会把前面的指令排到内存屏障的后面；即在执行到内存屏障这句指令时，在它前面的操作已经全部完成。
+内存可见性也是通过内存屏障实现的，它会执行下面两个操作：
+强制将对缓存的修改操作立即写入主存
+如果是写操作，它会导致其他 CPU 中对应的缓存行无效
 
 5. 什么是CAS？
 CAS（Compare and swap），即比较并交换，也是实现我们平时所说的自旋锁或乐观锁的核心操作。
@@ -164,21 +174,23 @@ AtomicMarkableReference维护的是一个boolean值的标识，也就是说至�
 锁从宏观上分类，分为悲观锁与乐观锁。
 乐观锁是一种乐观思想，即认为读多写少，遇到并发写的可能性低，每次去拿数据的时候都认为别人不会修改，所以不会上锁，但是在更新的时候会判断一下在此期间别人有没有去更新这个数据，采取在写时先读出当前版本号，然后加锁操作（比较跟上一次的版本号，如果一样则更新），如果失败则要重复读-比较-写的操作。
 java中的乐观锁基本都是通过CAS操作实现的，CAS是一种更新的原子操作，比较当前值跟传入值是否一样，一样则更新，否则失败。
-悲观锁是就是悲观思想，即认为写多，遇到并发写的可能性高，每次去拿数据的时候都认为别人会修改，所以每次在读写数据的时候都会上锁，这样别人想读写这个数据就会block直到拿到锁。java中的悲观锁就是Synchronized,AQS框架下的锁则是先尝试cas乐观锁去获取锁，获取不到，才会转换为悲观锁，如RetreenLock。
-java的线程是映射到操作系统原生线程之上的，如果要阻塞或唤醒一个线程就需要操作系统介入，需要在户态与核心态之间切换，这种切换会消耗大量的系统资源，因为用户态与内核态都有各自专用的内存空间，专用的寄存器等，用户态切换至内核态需要传递给许多变量、参数给内核，内核也需要保护好用户态在切换时的一些寄存器值、变量等，以便内核态调用结束后切换回用户态继续工作。
+悲观锁是就是悲观思想，即认为写多，遇到并发写的可能性高，每次去拿数据的时候都认为别人会修改，所以每次在读写数据的时候都会上锁，这样别人想读写这个数据就会block直到拿到锁。
+java中的悲观锁就是Synchronized,AQS框架下的锁则是先尝试cas乐观锁去获取锁，获取不到，才会转换为悲观锁，如RetreenLock。
+java的线程是映射到操作系统原生线程之上的，如果要阻塞或唤醒一个线程就需要操作系统介入，需要在户态与核心态之间切换，这种切换会消耗大量的系统资源，因为用户态与内核态都有各自专用的内存空间，专用的寄存器等，
+用户态切换至内核态需要传递给许多变量、参数给内核，内核也需要保护好用户态在切换时的一些寄存器值、变量等，以便内核态调用结束后切换回用户态继续工作。
     如果线程状态切换是一个高频操作时，这将会消耗很多CPU处理时间；
     如果对于那些需要同步的简单的代码块，获取锁挂起操作消耗的时间比用户代码执行的时间还要长，这种同步策略显然非常糟糕的。
 synchronized会导致争用不到锁的线程进入阻塞状态，所以说它是java语言中一个重量级的同步操纵，被称为重量级锁。
 JVM从1.5开始，引入了轻量锁与偏向锁，默认启用了自旋锁，他们都属于乐观锁。
 markword是java对象数据结构中的一部分，markword数据的长度在32位和64位的虚拟机（未开启压缩指针）中分别为32bit和64bit，它的最后2bit是锁状态标志位，用来标记当前对象的状态，对象的所处的状态，决定了markword存储的内容。
 
-7. 什么是AQS？
+7. 什么是 AQS？
 AQS是JDK1.5提供的一个基于FIFO等待队列实现的一个用于实现同步器的基础框架，这个基础框架的重要性可以这么说，JCU包里面几乎所有的有关锁、多线程并发以及线程同步器等重要组件的实现都是基于AQS这个框架。
 AbstractQueuedSynchronizer，简称为AQS框架
 AQS的核心思想是基于volatile int state这样的一个属性同时配合Unsafe工具对其原子性的操作来实现对当前锁的状态进行修改。当state的值为0的时候，标识改Lock不被任何线程所占有。
 JAVA内置的锁（使用同步方法和同步块）一直以来备受关注，其优势是可以花最小的空间开销创建锁（因为每个JAVA对象或者类都可以作为锁使用）和最少的时间开销获得锁（单线程可以在最短时间内获得锁）。
 然而，JVM内置锁表现一般，而且不支持任何公平策略。从JAVA 5开始在java.util.concurrent包中引入了有别于Synchronized的同步框架。
-ASQ将线程封装到一个Node里面，并维护一个CHL Node FIFO队列，它是一个非阻塞的FIFO队列，也就是说在并发条件下往此队列做插入或移除操作不会阻塞，是通过自旋锁和CAS保证节点插入和移除的原子性，实现无锁快速插入。
+AQS将线程封装到一个Node里面，并维护一个CHL Node FIFO队列，它是一个非阻塞的FIFO队列，也就是说在并发条件下往此队列做插入或移除操作不会阻塞，是通过自旋锁和CAS保证节点插入和移除的原子性，实现无锁快速插入。
 其实AbstractQueuedSynchronizer主要就是维护了一个state属性、一个FIFO队列和线程的阻塞与解除阻塞操作。
 state表示同步状态，它的类型为32位整型，对state的更新必须要保证原子性。
 队列是一个双向链表，每个节点里面都有一个prev和next，它们分别是前一个节点和后一个节点的引用。需要注意的是此双向链表除了链头其他每个节点内部都包含一个线程，而链头可以理解为一个空节点。
@@ -208,7 +220,7 @@ Executors是一个工厂类，可以方便的创建各种类型Executor或线程
     newCachedThreadPool()：创建一个线程池，线程数目会随任务数目增加而增加，同时也会回收已经空闲的线程。
     newScheduledThreadPool(corePoolSize)：创建一个线程池，可以让任务延迟或周期性执行。
 Executor有个缺点，一旦任务提交，就无法获得任务的执行情况，也无法停止，除非等待所有任务执行完毕或强制关闭JVM。
-ExecutorService扩展了Executor接口，加入了生命周期管理。ExecutorService pool = Executors.newFixedThreadPool(pool_size);
+ExecutorService扩展了Executor接口，加入了生命周期管理。ExecutorService pool = Executors.newFixedThreadPool(poolSize);
 ExecutorService可以在运行时关闭，关闭后ExecutorService就停止接收新的任务。
     对已经接收到的任务有两种处理方法：
     如果调用shutdown()方法，ExecutorService会等待所有接收到的任务执行完毕；
@@ -274,7 +286,7 @@ for(int i = 1; i < 5; i++) {
     });
 }
 for(int i = 1; i < 5; i++) {
-    cs.take().get());
+    cs.take().get();
 }
 
 12. 什么是FutureTask?
@@ -304,7 +316,7 @@ public FutureTask(Runnable runnable, V result) {
  }
  
 13. 什么是同步容器和并发容器的实现？
-同步容器可以简单的理解位通过synchronized来实现同步的容器，如果有多个线程调用同步容器的方法，它们将会串行执行。包括Vector和Hashtable,以及由同步容器封装类。Collections.synchronizedXxx等工厂方法创建的类。
+同步容器可以简单的理解位通过synchronized来实现同步的容器，如果有多个线程调用同步容器的方法，它们将会串行执行。包括Vector和HashTable,以及由同步容器封装类。Collections.synchronizedXxx等工厂方法创建的类。
 同步容器实现线程安全的方式将它们的状态封装起来，并对每个公有方法同步，使得每次只有一个线程能够访问容器的状态。
 通过并发容器来代替同步容器，可以极大地提高伸缩性并降低风险。
 
@@ -433,12 +445,14 @@ OnDeck线程获取到锁资源后会变为Owner线程，而没有得到锁资源
 Synchronized是非公平锁。 Synchronized在线程进入ContentionList时，等待的线程会先尝试自旋获取锁，如果获取不到就进入ContentionList，这明显对于已经进入队列的线程是不公平的，还有一个不公平的事情就是自旋获取锁的线程还可能直接抢占OnDeck线程的锁资源。
 区别一
     synchronized使用
-    public synchronized void test() {}
-    synchronized（Object） {}
+```public synchronized void test() {}```
+```synchronized（Object） {}```
     ReentrantLock使用
-    private Lock lock = new ReentrantLock();
-    try{lock.lock();}
-    finally{ lock.unlock();}
+``` java
+private Lock lock = new ReentrantLock();
+try{lock.lock();}
+finally{lock.unlock();}
+```
 区别二
     使用synchronized。如果Thread1不释放，Thread2将一直等待，不能被中断，使用ReentrantLock，可以中断等待，转而去做别的事情。
 区别三
@@ -463,16 +477,24 @@ Synchronized是非公平锁。 Synchronized在线程进入ContentionList时，�
 Semaphore也是一个线程同步的辅助类，可以维护当前访问自身的线程个数，并提供了同步机制。
 使用Semaphore可以控制同时访问资源的线程个数，例如，实现一个文件允许的并发访问数。
 单个信号量的Semaphore对象可以实现互斥锁的功能，并且可以是由一个线程获得了“锁”，再由另一个线程释放“锁”，这可应用于死锁恢复的一些场合。
-ExecutorService service = Executors.newCachedThreadPool();
-final  Semaphore sp = new Semaphore(3);//创建Semaphore信号量，初始化许可大小为3
-Runnable runnable = new Runnable(){
-    public void run(){
-        sp.acquire();//请求获得许可，如果有可获得的许可则继续往下执行，许可数减1。否则进入阻塞状态
-        Thread.sleep((long)(Math.random()*10000));
-        sp.release();//释放许可，许可数加1
+
+```java
+class Example {
+    
+    public static void main(String[] args){
+        ExecutorService service = Executors.newCachedThreadPool();
+        final  Semaphore sp = new Semaphore(3);//创建Semaphore信号量，初始化许可大小为3
+        Runnable runnable = new Runnable(){
+            public void run(){
+                sp.acquire();//请求获得许可，如果有可获得的许可则继续往下执行，许可数减1。否则进入阻塞状态
+                Thread.sleep((long)(Math.random()*10000));
+                sp.release();//释放许可，许可数加1
+            }
+        };
+        service.execute(runnable);
     }
-});
-service.execute(runnable);   
+}
+``` 
     
 21. Java Concurrency API中的Lock接口(Lock interface)是什么？对比同步它有什么优势？
 public interface Lock {
@@ -487,11 +509,11 @@ public interface Lock {
 Lock lock = new ReentrantLock(); //可重入锁（Lock的一种实现）
 lock.lock();
 try{
-    dosomething();
+    doSomething();
 }finally{
     lock.unlock();
 }
-不要将获取锁——lock()放在try中，如果在获取锁时发生了异常，异常抛出的同时，也会导致锁的无故释放（需要主动释放）。
+__不要将获取锁——lock()放在try__ 中，如果在获取锁时发生了异常，异常抛出的同时，也会导致锁的无故释放（需要主动释放）。
 在资源竞争不是很激烈的情况下，Synchronized的性能要优于Lock；但是在资源竞争很激烈的情况下，Synchronized的性能会下降几十倍，Lock的性能更优；
     Lock是一个接口，是代码层面的实现；synchronized是关键字，是内置的语言实现（JVM层面）。
     Lock是显示地获取释放锁，扩展性更强；synchronized是隐式地获取释放锁，更简捷。
@@ -500,12 +522,12 @@ try{
     Lock可以尝试非阻塞、可中断、超时地获取锁；synchronized不可以。
     Lock可以知道是否成功获取锁；synchronized无法知道。
 
-22. Hashtable的size()方法中明明只有一条语句”return count”，为什么还要做同步？    
+22. HashTable的size()方法中明明只有一条语句”return count”，为什么还要做同步？    
 java代码最终是被翻译成汇编代码执行的，汇编代码才是真正可以和硬件电路交互的代码。即使你看到Java代码只有一行，甚至你看到Java代码编译之后生成的字节码也只有一行，也不意味着对于底层来说这句语句的操作只有一个。
 一句”return count”假设被翻译成了三句汇编语句执行，完全可能执行完第一句，线程就切换了。
     
 23. ConcurrentHashMap的并发度是什么？
-并发度可以理解为程序运行时能够同时更新ConccurentHashMap且不产生锁竞争的最大线程数，实际上就是ConcurrentHashMap中的分段锁个数，即Segment[]的数组长度。
+并发度可以理解为程序运行时能够同时更新ConcurrentHashMap且不产生锁竞争的最大线程数，实际上就是ConcurrentHashMap中的分段锁个数，即Segment[]的数组长度。
 Segment的大小也被称为ConcurrentHashMap的并发度。
 ConcurrentHashMap，它内部细分了若干个小的HashMap，称之为段(Segment)。默认情况下一个ConcurrentHashMap被进一步细分为16个段。
 当用户设置并发度时，ConcurrentHashMap会使用大于等于该值的最小2幂指数作为实际并发度（假如用户设置并发度为17，实际并发度则为32）。
@@ -515,6 +537,40 @@ segmentShift与segmentMask都是在构造过程中根据concurrency level被相�
 如果并发度设置的过大，原本位于同一个Segment内的访问会扩散到不同的Segment中，CPU cache命中率会下降，从而引起程序性能下降。
 （文档的说法是根据你并发的线程数量决定，太多会导性能降低）
 若没有则添加：putIfAbsent()，替换：replace()
+
+ConcurrentHashMap初始化方法是通过initialCapacity，loadFactor, concurrencyLevel几个参数来初始化segments数组，
+段偏移量segmentShift，段掩码segmentMask和每个segment里的HashEntry数组 。
+``` java
+if (concurrencyLevel > MAX_SEGMENTS)
+    concurrencyLevel = MAX_SEGMENTS;
+
+// Find power-of-two sizes best matching arguments
+int sshift = 0;
+int ssize = 1;
+while (ssize < concurrencyLevel) {
+    ++sshift;
+    ssize <<= 1;
+}
+segmentShift = 32 - sshift;
+segmentMask = ssize - 1;
+this.segments = Segment.newArray(ssize);
+```
+
+为了能通过按位与的哈希算法来定位segments数组的索引，必须保证segments数组的长度是2的N次方（power-of-two size）,所以必须计算出一个是大于或等于concurrencyLevel的最小的2的N次方值来作为segments数组的长度。假如concurrencyLevel等于14，15或16，ssize都会等于16，即容器里锁的个数也是16。
+
+初始化segmentShift和segmentMask。这两个全局变量在定位segment时的哈希算法里需要使用，sshift等于ssize从1向左移位的次数，在默认情况下concurrencyLevel等于16，1需要向左移位移动4次，所以sshift等于4。segmentShift用于定位参与hash运算的位数，segmentShift等于32减sshift，所以等于28，这里之所以用32是因为ConcurrentHashMap里的hash()方法输出的最大数是32位的，后面的测试中我们可以看到这点。segmentMask是哈希运算的掩码，等于ssize减1，即15，掩码的二进制各个位的值都是1。
+
+（都是在默认情况下，concurrencyLevel=16,ssize=16,sshift=4）
+
+那么
+
+this.segmentShift = 32 - sshift=28
+
+而this.segmentMask = ssize - 1=15 二进制就是1111;
+
+hash >>> segmentShift) & segmentMask//定位Segment所使用的hash算法
+
+int index = hash & (tab.length - 1);// 定位HashEntry所使用的hash算法
 
 24. ReentrantReadWriteLock读写锁的使用？
 对象的方法中一旦加入synchronized修饰，则任何时刻只能有一个线程访问synchronized修饰的方法。
@@ -547,7 +603,7 @@ public void await() throws InterruptedException { };   //调用await()方法的�
 public boolean await(long timeout, TimeUnit unit) throws InterruptedException { };  //和await()类似，只不过等待一定的时间后count值还没变为0的话就会继续执行
 public void countDown() { };  //将count值减1
 示例
-public class countDownlatchTest {
+public class countDownLatchTest {
     public static void main(String[] args) throws InterruptedException {
         CountDownLatch countDownLatch = new CountDownLatch(5);
         for(int i=0;i<5;i++){
@@ -618,7 +674,7 @@ public class cyclicBarrierTest {
 
 26. LockSupport工具？
 LockSupport是JDK中比较底层的类，用来创建锁和其他同步工具类的基本线程阻塞原语。
-java锁和同步器框架的核心 AQS: AbstractQueuedSynchronizer，就是通过调用 LockSupport .park()和 LockSupport .unpark()实现线程的阻塞和唤醒 的。 
+java锁和同步器框架的核心 AQS: AbstractQueuedSynchronizer，就是通过调用 LockSupport.park()和 LockSupport.unpark()实现线程的阻塞和唤醒 的。 
 LockSupport 很类似于二元信号量(只有1个许可证可供使用)，如果这个许可还没有被占用，当前线程获取许可并继 续 执行；如果许可已经被占用，当前线 程阻塞，等待获取许可。
 LockSupport是可不重入 的，如果一个线程连续2次调用 LockSupport .park()，那么该线程一定会一直阻塞下去。
 public static void main(String[] args) {
@@ -847,10 +903,10 @@ synchronized关键字是防止多个线程同时执行一段代码，那么就�
 举例
 //线程1:
 context = loadContext();   //语句1
-volatile inited = true;             //语句2，因为当执行到语句2时，必定能保证context已经初始化完毕
+volatile inited = true; //语句2，因为当执行到语句2时，必定能保证context已经初始化完毕
 //线程2:
 while(!inited ){ sleep() }
-doSomethingwithconfig(context);
+doSomethingWithConfig(context);
 还有双重检查（Double-Check）
 
 34. Java中如何获取到线程dump文件？
@@ -891,14 +947,14 @@ doSomethingwithconfig(context);
 比如平均每个线程CPU运行时间为0.5s，而线程等待时间（非CPU运行时间，比如IO）为1.5s，CPU核心数为8，那么根据上面这个公式估算得到：((0.5+1.5)/0.5)*8=32。
 
 38. 如果你提交任务时，线程池队列已满，这时会发生什么？
-ThreadPoolExecutor's中的submit()方法会抛出一个RejectedExecutionException异常
+ThreadPoolExecutor中的submit()方法会抛出一个RejectedExecutionException异常
 
 39. 锁的等级：方法锁、对象锁、类锁?
 
 40. 如果同步块内的线程抛出异常会发生什么？
 synchronized会释放锁，lock需要在finally里面释放
 lock同步是在代码层进行资源的抢占控制，而用synchronization进行的同步jvm层的控制
-被synchronizatioin修饰的语句块，其实在编译成字节码时，会被monitorenter和monitorexit指令包围，多个线程在进入monitorenter控制的字节码时，需要进入等候队列排队，同时会隐式的在字节码里添加异常处理器，在异常处理器里添加monitorexit指令，保证了同步块里出现异常时能释放资源。
+被synchronization修饰的语句块，其实在编译成字节码时，会被monitorenter和monitorexit指令包围，多个线程在进入monitorenter控制的字节码时，需要进入等候队列排队，同时会隐式的在字节码里添加异常处理器，在异常处理器里添加monitorexit指令，保证了同步块里出现异常时能释放资源。
 
 41. 并发编程（concurrency）并行编程（parallellism）有什么区别？
 并发（concurrency）和并行（parallellism）是：
@@ -960,6 +1016,10 @@ Java使用的线程调度是抢占式调度，在JVM中体现为让可运行池�
 两种常用的死锁解除方法：
     资源剥夺法。挂起某些死锁进程，并抢占它的资源，将这些资源分配给其他的死锁进程。但应防止被挂起的进程长时间得不到资源，而处于资源匮乏的状态。
     撤销进程法。强制撤销部分、甚至全部死锁进程并剥夺这些进程的资源。撤销的原则可以按进程优先级和撤销进程代价的高低进行。
+    
+    
+银行家算法
+    
 Jconsole是JDK自带的图形化界面工具，使用JDK给我们的的工具JConsole，可以通过打开cmd然后输入jconsole打开。
 Jstack是JDK自带的命令行工具，主要用于线程Dump分析。
 
