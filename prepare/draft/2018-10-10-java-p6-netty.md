@@ -4,7 +4,7 @@
 
 1. BIO、NIO和AIO
 BIO（同步阻塞IO）
-在JDK1.4出来之前，我们建立网络连接的时候采用BIO模式，需要先在服务端启动一个ServerSocket，然后在客户端启动Socket来对服务端进行通信，
+在JDK1.4出来之前，建立网络连接的时候采用BIO模式，需要先在服务端启动一个ServerSocket，然后在客户端启动Socket来对服务端进行通信，
 默认情况下服务端需要对每个请求建立一堆线程等待请求，而客户端发送请求后，先咨询服务端是否有线程相应，
 如果没有则会一直等待或者遭到拒绝请求，如果有的话，客户端会线程会等待请求结束后才继续执行。
 NIO（同步非阻塞IO）
@@ -32,12 +32,12 @@ fc.read( buffer );
 写入数据到文件
 FileOutputStream fout = new FileOutputStream( "writesomebytes.txt" );
 FileChannel fc = fout.getChannel();
-ByteBuffer buffer = ByteBuffer.allocate( 1024 );
+ByteBuffer buffer = ByteBuffer.allocate(1024);
 for (int i=0; i<message.length; ++i) {
  buffer.put( message[i] );
 }
 buffer.flip();
-fc.write( buffer );
+fc.write(buffer);
 读写结合
 FileInputStream fi=new FileInputStream(new File(src));
 FileOutputStream fo=new FileOutputStream(new File(dst));
@@ -53,7 +53,7 @@ while(true){
         break;  
     }
     //开始写
-    //重设一下buffer的position=0，limit=position
+    //重设一下buffer的limit=position，position=0
     buffer.flip();
     outChannel.write(buffer);
     //写完要重置buffer，重设position=0,limit=capacity
@@ -63,6 +63,15 @@ inChannel.close();
 outChannel.close();
 fi.close();
 fo.close();
+
+``` java
+public final Buffer flip() {
+        limit = position;
+        position = 0;
+        mark = -1;
+        return this;
+    }
+```
 
 Selector selector = Selector.open();
 channel.configureBlocking(false);
