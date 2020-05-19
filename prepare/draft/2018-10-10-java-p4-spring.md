@@ -225,27 +225,43 @@ Spring AOP 基于代理（Proxy）的实现，有两种实现方式：
 - 基于子类化的CGLIB代理
 在jdk1.3以后，提供了一个 API`java.lang.reflect.InvocationHandler`的类，
 动态代理实现主要是实现`InvocationHandler`，并且将目标对象注入到代理对象中，利用反射机制来执行目标对象的方法。
+```java
+public class MyInvocationHandler implements InvocationHandler {
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable;
+}
 ```
-public class MyInvocationHandler implements InvocationHandler
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
-SleepDao s=new SleepDaoImpl();
-ClassLoader classLoader=s.getClass().getClassLoader();
-MyInvocationHandler myInvocationHandler = new MyInvocationHandler(s);
-SleepDao sd=(SleepDao) Proxy.newProxyInstance(classLoader, s.getClass().getInterfaces(), myInvocationHandler);
-sd.sleep();
+```java
+class Example {
+    public static void main(String[] args){
+        SleepDao s = new SleepDaoImpl();
+        ClassLoader classLoader = s.getClass().getClassLoader();
+        MyInvocationHandler myInvocationHandler = new MyInvocationHandler(s);
+        SleepDao sd = (SleepDao) Proxy.newProxyInstance(classLoader, s.getClass().getInterfaces(), myInvocationHandler);
+        sd.sleep();
+    }
+}
 ```
 CGlib代理
+```java
+public class CglibProxy implements MethodInterceptor {
+    @Override
+    public Object intercept(Object proxy, Method method, Object[] args, MethodProxy arg3) throws Throwable;
+}
 ```
-public class CglibProxy implements MethodInterceptor 
-    public Object intercept(Object proxy, Method method, Object[] args, MethodProxy arg3) throws Throwable
-CglibProxy proxy=new CglibProxy();
-Base base=(Base) proxy.getProxy(new Base());
-base.sleep();
+```java
+class Example {
+    public static void main(String[] args){
+        CglibProxy proxy = new CglibProxy();
+        Base base = (Base) proxy.getProxy(new Base());
+        base.sleep();
+    }
+}
 ```
 8. Spring 是如何管理事务的，事务管理机制？
 Spring的事务机制包括声明式事务和编程式事务。
 编程式事务管理：Spring推荐使用TransactionTemplate，实际开发中使用声明式事务较多。
-声明式事务管理：将我们从复杂的事务处理中解脱出来，获取连接，关闭连接、事务提交、回滚、异常处理等这些操作都不用我们处理了，Spring都会帮我们处理。
+声明式事务管理：将我们从复杂的事务处理中解脱出来，获取连接，关闭连接、事务提交、回滚、异常处理等这些操作都不用手动处理了。
 Spring事务管理主要包括3个接口，Spring的事务主要是由他们三个共同完成的。
 PlatformTransactionManager：事务管理器--主要用于平台相关事务的管理，主要有三个方法：
     commit  事务提交；
@@ -283,11 +299,11 @@ PROPAGATION_NESTED
 9个？
 
 11. Spring MVC 的工作原理？
-springmvc请所有的请求都提交给DispatcherServlet,它会委托应用系统的其他模块负责负责对请求进行真正的处理工作。 
+spring mvc请所有的请求都提交给DispatcherServlet,它会委托应用系统的其他模块负责负责对请求进行真正的处理工作。 
 DispatcherServlet查询一个或多个HandlerMapping,找到处理请求的Controller. 
 DispatcherServlet请请求提交到目标Controller 
 Controller进行业务逻辑处理后，会返回一个ModelAndView 
-Dispathcher查询一个或多个ViewResolver视图解析器,找到ModelAndView对象指定的视图对象 
+Dispatcher查询一个或多个ViewResolver视图解析器,找到ModelAndView对象指定的视图对象 
 视图对象负责渲染返回给客户端。 
 
 12. Spring如何解决循环依赖？
@@ -300,16 +316,22 @@ Spring的单例对象的初始化主要分为三步：
     populateBean：填充属性，这一步主要是多bean的依赖属性进行填充
     initializeBean：调用spring xml中的init 方法。
 Spring为了解决单例的循环依赖问题，使用了三级缓存。
+
+```
 /** Cache of singleton objects: bean name --> bean instance */单例对象的cache
 private final Map<String, Object> singletonObjects = new ConcurrentHashMap<String, Object>(256);
 /** Cache of early singleton objects: bean name --> bean instance */提前暴光的单例对象的Cache 
 private final Map<String, Object> earlySingletonObjects = new HashMap<String, Object>(16);
 /** Cache of singleton factories: bean name --> ObjectFactory */单例对象工厂的cache 
 private final Map<String, ObjectFactory<?>> singletonFactories = new HashMap<String, ObjectFactory<?>>(16);
-    分析getSingleton()的整个过程，Spring首先从一级缓存singletonObjects中获取。
-    如果获取不到，并且对象正在创建中，就再从二级缓存earlySingletonObjects中获取。
-    如果还是获取不到且允许singletonFactories通过getObject()获取，就从三级缓存singletonFactory.getObject()(三级缓存)获取
-    然后从singletonFactories中移除，并放入earlySingletonObjects中。其实也就是从三级缓存移动到了二级缓存。
+```
+
+分析getSingleton()的整个过程，Spring首先从一级缓存singletonObjects中获取。
+如果获取不到，并且对象正在创建中，就再从二级缓存earlySingletonObjects中获取。
+如果还是获取不到且允许singletonFactories通过getObject()获取，就从三级缓存singletonFactory.getObject()(三级缓存)获取
+然后从singletonFactories中移除，并放入earlySingletonObjects中。其实也就是从三级缓存移动到了二级缓存。
+
+
 Spring解决循环依赖的诀窍就在于singletonFactories这个三级cache。
 对于setter注入造成的依赖是通过Spring容器提前暴露刚完成构造器注入但未完成其他步骤（如setter注入）的Bean来完成的，而且只能解决单例作用域的Bean循环依赖。
 在Spring IOC中对于singleton作用域Bean,可以通过setAllowCircularReferences(false);来禁用循环引用。
