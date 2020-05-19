@@ -4,10 +4,12 @@ DI（依赖注入）：全称为 Dependency Injection，意思自身对象中的
 简单来说就是把本来在类内部控制的对象，反转到类外部进行创建后注入，不再由类本身进行控制，这就是IOC的本质。
 
 2. Spring IOC 的理解，其初始化过程？
+```
 ClassPathResource resource = new ClassPathResource("bean.xml");  
 DefaultListableBeanFactory factory = new DefaultListableBeanFactory();  
 XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(factory);  
 reader.loadBeanDefinitions(resource); 
+```
 ApplicationContext比较复杂，它不但继承了BeanFactory的大部分属性，还继承其它可扩展接口，扩展的了许多高级的属性，其接口定义如下：
 public interface ApplicationContext extends EnvironmentCapable, 
 　　　　　　　　　　　　　　　　　　ListableBeanFactory, // 继承于BeanFactory
@@ -38,11 +40,15 @@ BeanFactory，以Factory结尾，表示它是一个工厂类(接口)，用于管
 在Spring中，BeanFactory是IOC容器的核心接口，它的职责包括：实例化、定位、配置应用程序中的对象及建立这些对象间的依赖。
 Spring为我们提供了许多易用的BeanFactory实现，XmlBeanFactory就是常用的一个，该实现将以XML方式描述组成应用的对象及对象间的依赖关系。
 XmlBeanFactory类将持有此XML配置元数据，并用它来构建一个完全可配置的系统或应用。
+```
 Resource resource = new FileSystemResource("beans.xml");
 BeanFactory factory = new XmlBeanFactory(resource);
+```
 或者
+```
 ApplicationContext context = new ClassPathXmlApplicationContext(new String[] {"applicationContext.xml", "applicationContext-part2.xml"});
 BeanFactory factory = (BeanFactory) context;
+```
 基本就是这些了，接着使用getBean(String beanName)方法就可以取得bean的实例；BeanFactory提供的方法及其简单，仅提供了六种方法供客户调用：
     boolean containsBean(String beanName) 判断工厂中是否包含给定名称的bean定义，若有则返回true
     Object getBean(String) 返回给定名称注册的bean实例。根据bean的配置情况，如果是singleton模式将返回一个共享实例，否则将返回一个新建的实例，如果没有找到指定bean,该方法可能会抛出异常
@@ -51,31 +57,40 @@ BeanFactory factory = (BeanFactory) context;
     boolean isSingleton(String) 判断给定名称的bean定义是否为单例模式
     String[] getAliases(String name) 返回给定bean名称的所有别名
 FactoryBean，以Bean结尾，表示它是一个Bean，不同于普通Bean的是：它是实现了FactoryBean<T>接口的Bean
-通过getBean(String BeanName)获取到的Bean对象并不是FactoryBean的实现类对象，而是这个实现类中的getObject()方法返回的对象。
-要想获取FactoryBean的实现类，就要getBean(&BeanName)，在BeanName之前加上&。
+通过getBean(String beanName)获取到的Bean对象并不是FactoryBean的实现类对象，而是这个实现类中的getObject()方法返回的对象。
+要想获取FactoryBean的实现类，就要getBean(&beanName)，在beanName之前加上&。
 示例xml文件
-<bean id="student" class="com.spring.bean.Student">  
-    <property name="name" value="zhangsan" />  
-</bean> 
-<bean id="factoryBeanPojo" class="com.spring.bean.FactoryBeanPojo">  
-    <property name="type" value="student" />
-</bean> 
+```xml
+<beans>
+    <bean id="student" class="sf.spring.bean.example.Student">  
+        <property name="name" value="sansan" />  
+    </bean> 
+    
+    <bean id="factoryBeanPojo" class="sf.spring.bean.example.FactoryBeanPojo">  
+        <property name="type" value="student" />
+    </bean> 
+</beans>
+```
 示例class文件
+```java
 public class FactoryBeanPojo implements FactoryBean{
 	private String type;
 	@Override
 	public Object getObject() throws Exception {
-		return "student".equals(type) : new Student() : null;
+		return "student".equals(type) ? new Student() : null;
 	}
-    ......
+    // ......
 }
+```
 示例测试文件
-ClassPathXmlApplicationContext cpxa = new ClassPathXmlApplicationContext("...");
-Object school=  cpxa.getBean("factoryBeanPojo");
-FactoryBeanPojo factoryBeanPojo= (FactoryBeanPojo) cpxa.getBean("&factoryBeanPojo");
-System.out.println(school.getClass().getName());    // com.spring.bean.Student
-System.out.println(factoryBeanPojo.getClass().getName());  //com.spring.bean.FactoryBeanPojo
-BeanFactory是提供了OC容器最基本的形式，给具体的IOC容器的实现提供了规范，
+```
+ClassPathXmlApplicationContext cpxa = new ClassPathXmlApplicationContext(new String[] {"applicationContext.xml"}); 
+Object student = cpxa.getBean("factoryBeanPojo");
+FactoryBeanPojo factoryBeanPojo = (FactoryBeanPojo) cpxa.getBean("&factoryBeanPojo");
+System.out.println(student.getClass().getName());    // sf.spring.bean.example.Student
+System.out.println(factoryBeanPojo.getClass().getName());  //sf.spring.bean.example.FactoryBeanPojo
+```
+BeanFactory是提供了IOC容器最基本的形式，给具体的IOC容器的实现提供了规范，
 FactoryBean可以说为IOC容器中Bean的实现提供了更加灵活的方式，FactoryBean在IOC容器的基础上给Bean的实现加上了一个简单工厂模式和装饰模式
 BeanFactory和FactoryBean其实没有什么比较性的，只是两者的名称特别接近
 
@@ -104,12 +119,17 @@ public class EmailEvent extends ApplicationEvent
 public class EmailNotifier implements ApplicationListener<ApplicationEvent>
     public void onApplicationEvent(ApplicationEvent event)
 配置
+```
 <bean class="com.cxg.test.springPlatfrom.EmailNotifier" />  
+```
 测试
+```
 ApplicationContext applicationContext=new ClassPathXmlApplicationContext("application.xml");  
 EmailEvent emailEvent = new EmailEvent("hello Spring!", "cxg@126.com", "This is SpringApplicatoinContext test!");  
 applicationContext.publishEvent(emailEvent); //主动触发事件监视机制  
+```
 ApplicationContext 支持AOP（常用的是拦截器），
+```
 <mvc:interceptors>  
     <mvc:interceptor>  
         <mvc:mapping path="/**" />  
@@ -119,17 +139,21 @@ ApplicationContext 支持AOP（常用的是拦截器），
         <ref bean="validateSystemUserSessionInterceptor"  />  
     </mvc:interceptor>  
 </mvc:interceptors> 
+```
 
 5. ApplicationContext 上下文的生命周期
 Spring中ApplicationContext加载机制。 
 加载器目前有两种选择：ContextLoaderListener和ContextLoaderServlet。 
 在web.xml中增加： 
+```
 <listener> 
      <listener-class> 
           org.springframework.web.context.ContextLoaderListener
      </listener-class> 
 </listener> 
+```
 或
+```
 <servlet> 
        <servlet-name>context</servlet-name> 
        <servlet-class> 
@@ -137,6 +161,7 @@ Spring中ApplicationContext加载机制。
        </servlet-class> 
        <load-on-startup>1</load-on-startup> 
 </servlet>
+```
 通过以上配置，Web容器会自动加载/WEB-INF/applicationContext.xml初始化 
 ApplicationContext实例，如果需要指定配置文件位置，可通过context-param加以指定： 
 <context-param> 
