@@ -25,6 +25,7 @@ REDIS_ENCODING_LINKEDLIST 	双端链表
 REDIS_ENCODING_ZIPLIST 	压缩列表
 REDIS_ENCODING_INTSET 	整数集合
 REDIS_ENCODING_SKIPLIST 	跳跃表和字典
+
 字符串对象
 字符串对象的编码可以是int、raw或者embstr。
 如果一个字符串的内容可以转换为long，那么该字符串就会被转换成为long类型，对象的ptr就会指向该long，并且对象类型也用int类型表示。
@@ -32,18 +33,24 @@ REDIS_ENCODING_SKIPLIST 	跳跃表和字典
 embstr应该是Redis 3.0新增的数据结构,在2.8中是没有的。
 如果字符串对象的长度小于39字节，就用embstr对象。否则用传统的raw对象。
 需要注意的是，redis并未提供任何修改embstr的方式，即embstr是只读的形式。对embstr的修改实际上是先转换为raw再进行修改。
+
 列表对象
 列表对象的编码可以是ziplist或者linkedlist。
 ziplist是一种压缩链表，它的好处是更能节省内存空间，因为它所存储的内容都是在连续的内存区域当中的。当列表对象元素不大，每个元素也不大的时候，就采用ziplist存储。整个ziplist只需要malloc一次，它们在内存中是一块连续的区域。
 linkedlist是一种双向链表。它的结构比较简单，节点中存放pre和next两个指针，还有节点相关的信息。当每增加一个node的时候，就需要重新malloc一块内存。
+
 哈希对象
 哈希对象的底层实现可以是ziplist或者hashtable。
 ziplist中的哈希对象是按照key1,value1,key2,value2这样的顺序存放来存储的。当对象数目不多且内容不大时，这种方式效率是很高的。
 hashtable的是由dict这个结构来实现的，dict是一个字典，其中的指针dicht ht[2] 指向了两个哈希表，dicht[0] 是用于真正存放数据，dicht[1]一般在哈希表元素过多进行rehash的时候用于中转数据。 
+
 集合对象
 集合对象的编码可以是intset或者hashtable。
 intset是一个整数集合，里面存的为某种同一类型的整数，支持三种长度的整数，INTSET_ENC_INT16、INTSET_ENC_INT32、INTSET_ENC_INT64
-intset是一个有序集合，查找元素的复杂度为O(logN)，但插入时不一定为O(logN)，因为有可能涉及到升级操作。比如当集合里全是int16_t型的整数，这时要插入一个int32_t，那么为了维持集合中数据类型的一致，那么所有的数据都会被转换成int32_t类型，涉及到内存的重新分配，这时插入的复杂度就为O(N)了。是intset不支持降级操作。
+intset是一个有序集合，查找元素的复杂度为O(logN)，但插入时不一定为O(logN)，因为有可能涉及到升级操作。
+比如当集合里全是int16_t型的整数，这时要插入一个int32_t，那么为了维持集合中数据类型的一致，那么所有的数据都会被转换成int32_t类型，涉及到内存的重新分配，这时插入的复杂度就为O(N)了。
+是intset不支持降级操作。
+
 有序集合对象
 有序集合的编码可能两种，一种是ziplist，另一种是skiplist与dict的结合。
 ziplist作为集合和作为哈希对象是一样的，member和score顺序存放。按照score从小到大顺序排列。
@@ -66,12 +73,16 @@ guava BloomFilter<Integer> bloomFilter = BloomFilter.create(Funnels.integerFunne
     具有容错性。只要大部分的Redis节点正常运行，客户端就可以加锁和解锁。
     加锁和解锁必须是同一个客户端，客户端自己不能把别人加的锁给解了。
 加锁代码
+```
 String result = jedis.set(lockKey, requestId, SET_IF_NOT_EXIST, SET_WITH_EXPIRE_TIME, expireTime);
 return LOCK_SUCCESS.equals(result)；
+```
 解锁代码
+```
 String script = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
 Object result = jedis.eval(script, Collections.singletonList(lockKey), Collections.singletonList(requestId));
 return RELEASE_SUCCESS.equals(result)；
+```
 这段Lua代码获取锁对应的value值，检查是否与requestId相等，如果相等则删除锁（解锁）。
 在eval命令执行Lua代码的时候，Lua代码将被当成一个命令去执行，并且直到eval命令执行完成，Redis才会执行其他命令。
 
@@ -91,13 +102,13 @@ Redis的并发竞争问题，主要是发生在并发写竞争。
 5. Redis持久化的几种方式，优缺点是什么，怎么实现的
 RDB持久化可以在指定的时间间隔内生成数据集的时间点快照
 AOF持久化记录服务器执行的所有写操作命令,并在服务器启动时,通过重新执行这些命令来还原数据集,AOF文件中全部以redis协议的格式来保存,新命令会被追加到文件的末尾,redis还可以在后台对AOF文件进行重写,文件的体积不会超出保存数据集状态所需要的实际大小,
-redis还可以同时使用AOF持久化和RDB持久化,在这种情况下,当redis重启时,它会有限使用AOF文件来还原数据集,因为AOF文件保存的数据集通常比RDB文件所保存的数据集更加完
-ＲＤＢ的优点
+redis还可以同时使用AOF持久化和RDB持久化,在这种情况下,当redis重启时,它会有限使用AOF文件来还原数据集,因为AOF文件保存的数据集通常比RDB文件所保存的数据集更加完整
+RDB 的优点
     RDB 是一个非常紧凑（compact）的文件，它保存了 Redis 在某个时间点上的数据集。 这种文件非常适合用于进行备份： 比如说，你可以在最近的 24 小时内，每小时备份一次 RDB 文件，并且在每个月的每一天，也备份一个 RDB 文件。 这样的话，即使遇上问题，也可以随时将数据集还原到不同的版本。
     RDB 非常适用于灾难恢复（disaster recovery）：它只有一个文件，并且内容都非常紧凑，可以（在加密后）将它传送到别的数据中心，或者亚马逊 S3 中。
     RDB 可以最大化 Redis 的性能：父进程在保存 RDB 文件时唯一要做的就是 fork 出一个子进程，然后这个子进程就会处理接下来的所有保存工作，父进程无须执行任何磁盘 I/O 操作。
     RDB 在恢复大数据集时的速度比 AOF 的恢复速度要快
-ＲＤＢ的缺点
+RDB 的缺点
     如果你需要尽量避免在服务器故障时丢失数据，那么 RDB 不适合你。 虽然 Redis 允许你设置不同的保存点（save point）来控制保存 RDB 文件的频率， 但是， 因为RDB 文件需要保存整个数据集的状态， 所以它并不是一个轻松的操作。 因此你可能会至少 5 分钟才保存一次 RDB 文件。 在这种情况下， 一旦发生故障停机， 你就可能会丢失好几分钟的数据。
     每次保存 RDB 的时候，Redis 都要 fork() 出一个子进程，并由子进程来进行实际的持久化工作。 在数据集比较庞大时， fork()可能会非常耗时，造成服务器在某某毫秒内停止处理客户端； 如果数据集非常巨大，并且 CPU 时间非常紧张的话，那么这种停止时间甚至可能会长达整整一秒。 虽然 AOF 重写也需要进行 fork() ，但无论 AOF 重写的执行间隔有多长，数据的耐久性都不会有任何损失。
 AOF 的优点
