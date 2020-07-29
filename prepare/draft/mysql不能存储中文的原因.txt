@@ -1,5 +1,80 @@
-﻿mysql不能存储中文的原因
+﻿# mysql_secure_installation
 
-首先将mysql.ini配置文件的UTF8的setting注释解开
-第二将client和mysqld的default-character-set（不知道是不是这样写，忘了）设置为utf8
-第三创建数据库数据表的时候将编码设置为utf8和utf8_unicion_ci
+运行上述命令之后，设置 root 密码并通过输入 [Yes/Y] 和按下 [Enter] 键来回答一系列问题
+
+设置 root 帐户的密码
+禁用远程 root 用户登录
+删除匿名用户帐户和测试数据库
+
+------------------------------------------------
+
+MySQL 服务器只接受来自本地主机的连接   限制来自远程机器的访问
+
+# vi /etc/my.cnf	                   [RHEL/CentOS]	
+# vi /etc/mysql/my.conf                    [Debian/Ubuntu] 
+# vi /etc/mysql/mysql.conf.d/mysqld.cnf    [Debian/Ubuntu]
+
+在 [mysqld] 部分中添加下面这一行
+
+bind-address = 127.0.0.1
+
+----------------------------
+
+禁用 local_infile，以防止在 [mysqld] 部分从 MySQL 中访问底层文件系统。
+
+local-infile=0
+
+------------------------------
+
+配置文件[mysqld]部分来开启mysql日志功能
+
+log=/var/log/mysql.log
+
+---------------------------
+
+设置只能由 root 用户修改配置文件访问权限
+
+# chmod 644 /etc/my.cnf
+
+------------------------------------------
+
+删除 MySQL shell 历史，因为所有的在 shell 输入过的用户名和密码都会记录到历史文件里面
+
+# cat /dev/null > ~/.mysql_history
+
+---------------------------
+
+推荐连接 MySQL 的方式
+
+# mysql -u root -p
+Enter password:
+
+而不是
+# mysql -u root -ppassword_
+
+因为在终端上输入的所有命令都会被存储在一个历史文件中，具体取决于你正在使用的shell（例如 bash 的 shell 历史文件放在 ~/.bash_history）攻击者访问这个历史文件可以很容易地看到记录在那里的任何密码。
+
+-----------------------------------
+
+对于每一个在服务器上运行的应用，只设置一个与该应用相关的数据库用户。
+
+# mysql -u root -p
+MariaDB [(none)]> CREATE DATABASE osclass_db;
+MariaDB [(none)]> CREATE USER 'osclassdmin'@'localhost' IDENTIFIED BY 'osclass@dmin%!2';
+MariaDB [(none)]> GRANT ALL PRIVILEGES ON osclass_db.* TO 'osclassdmin'@'localhost';
+MariaDB [(none)]> FLUSH PRIVILEGES;
+MariaDB [(none)]> exit
+
+------------------------------------------------------
+
+避免在 where 子句中使用!=或<>操作符
+避免在 where 子句中对字段进行 null 值判断，可以在设置默认值0，确保表中没有null值
+避免在 where 子句中使用 or 来连接条件，可以这样查询：select id from t where num=10 union all select id from t where num=20
+避免在where子句中对字段进行函数操作
+
+能用 between 就不要用 in 
+用 exists 代替 in 是一个好的选择
+索引可以提高相应的 select 的效率，但同时也降低了 insert 及 update 的效率，因为 insert 或 update 时有可能会重建索引，一个表的索引数最好不要超过6个
+尽量使用数字型字段，因为引擎在处理查询和连接时会 逐个比较字符串中每一个字符，而对于数字型而言只需要比较一次就够了
+使用 varchar/nvarchar 代替 char/nchar ，因为首先变长字段存储空间小，可以节省存储空间
+在新建临时表时，如果一次性插入数据量很大，那么可以使用 select into 代替 create table，避免造成大量 log ，以提高速度；如果数据量不大，为了缓和系统表的资源，应先create table，然后insert。

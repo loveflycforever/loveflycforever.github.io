@@ -1,0 +1,26 @@
+RabbitMQ 所有版本下载列表地址
+https://www.rabbitmq.com/download.html
+RabbitMQ 的 Windows 版本下载页面
+https://www.rabbitmq.com/install-windows.html
+
+注意：
+RabbitMQ requires a 64-bit supported version of Erlang for Windows to be installed.
+RabbitMQ 的安装需要64位版本的 Erlang 的支持。
+
+Erlang 下载列表地址
+http://www.erlang.org/downloads
+
+重要：
+Erlang 安装过程必须处于管理员权限
+
+查看状态
+rabbitmqctl status
+
+安装管理插件
+rabbitmq-plugins enable rabbitmq_management
+
+http://127.0.0.1:15672/
+guest
+guest
+
+

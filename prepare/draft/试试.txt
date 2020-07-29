@@ -8,3 +8,35 @@ Java虚拟机不和任何包括Java在内的语言绑定，它之与“Class文�
 ASM -> BTrace -> Arthas
 
 gadget
+
+
+
+前端
+	HTML5、CSS3、Bootstrap、ECharts、UEditor
+
+服务器
+	Tomcat
+
+数据库
+	MySQL、SQLServer、Redis、J2Cache
+
+后台
+	Spring、SpringMVC、Hibernate、Struts2、Servlet、JSoup、Jedis、JDBC、
+
+
+
+在线练习
+
+    LeetCode
+    Virtual Judge
+    CareerCup
+    HackerRank
+    CodeFights
+    Kattis
+    HackerEarth
+
+在线面试编程
+
+    Gainlo
+    Refdash
+

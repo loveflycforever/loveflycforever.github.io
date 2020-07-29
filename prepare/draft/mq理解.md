@@ -51,3 +51,7 @@ Consume Queue中存储单元是一个20字节定长的二进制数据，顺序�
     Message Tag HashCode存储消息的Tag的哈希值：主要用于订阅时消息过滤（订阅时如果指定了Tag，会根据HashCode来快速查找到订阅的消息）
 
 CommitLog：消息存放的物理文件，每台broker上的commitlog被本机所有的queue共享，不做任何区分。
+
+
+
+初次安装rabbitmq无法识别erlang的环境变量解决办法   重启
