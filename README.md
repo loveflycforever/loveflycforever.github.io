@@ -1,4 +1,4 @@
-<center><a href="http://loveflycforever.github.io/"><b>SuperF</b></a> 可能是一个有趣的人。</center>
+<center><a href="http://loveflycforever.github.io/"><b>SuperFan</b></a> 可能是一个有趣的人。</center>
 
 ## 写点啥
 * 希望自己天不怕，地不怕

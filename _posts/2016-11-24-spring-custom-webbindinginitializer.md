@@ -24,7 +24,7 @@ public class MyWebBindingInitializer implements WebBindingInitializer {
 <bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">  
     <property name="cacheSeconds" value="0"/>  
     <property name="webBindingInitializer">  
-        <bean class="io.github.superf.util.MyWebBindingInitializer"/>  
+        <bean class="io.github.superfan.util.MyWebBindingInitializer"/>  
     </property>  
 </bean>  
 ```

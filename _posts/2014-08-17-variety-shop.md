@@ -364,12 +364,12 @@ b = ++a-1; // a = a+1; b = a-1;
 1. `execution(* *(..))`
 
     表示匹配所有方法
-2. `execution(public * org.superf.service.OneService.*(..))`
+2. `execution(public * org.superfan.service.OneService.*(..))`
 
-    表示匹配org.superf.service.OneService中所有的公有方法
-3. `execution(* org.superf.service..*.*(..))`
+    表示匹配org.superfan.service.OneService中所有的公有方法
+3. `execution(* org.superfan.service..*.*(..))`
 
-    表示匹配org.superf.service包及其子包下的所有方法
+    表示匹配org.superfan.service包及其子包下的所有方法
 
 **[954]** 程序最终都是一条条的指令。
 
