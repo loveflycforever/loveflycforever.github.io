@@ -139,7 +139,19 @@ Barracuda(innodb-plugin)
 支持行格式ROW_FORMAT=DYNAMIC，ROW_FORMAT=COMPRESSED特性 这两者主要是功能上的区别功能上的。另外在行里的变长字段和Antelope的区别是只存20个字节，其它的overflow page存储。另外这两都需要开启innodb\_file\_per\_table=1（这个特性对一些优化还是很有用的）
 
 
+mysql中若一张表里面存在varchar、text以及其变形、blob以及其变形的字段的话，那么这个表其实也叫动态表，即该表的 row_format是dynamic，就是说每条记录所占用的字节是动态的。其优点节省空间，缺点增加读取的时间开销。反之，这张表叫静态表，该表 row_format为fixed,即每条记录占用字节一样。优点读取快，缺点浪费部分空间，所以，做搜索查询量大的表一般都以空间来换取时间，设计成静态表。
 
+修改行格式
+
+ALTER TABLE table_name ROW_FORMAT = DEFAULT
+
+修改过程导致：
+
+fixed--->dynamic: 这会导致CHAR变成VARCHAR
+
+dynamic--->fixed: 这会导致VARCHAR变成CHAR
+
+需要注意，如果要使用压缩，一定需要先使用innodb_file_format =Barracuda格式，不然没作用。
 -------
 
 索引的分类

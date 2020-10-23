@@ -1,0 +1,141 @@
+载ruby
+    http://www.ruby-lang.org/en/downloads/
+安装依赖包
+    yum -y install gcc openssl-devel make
+编译
+    tar -xvf ruby-2.7.1.tar.gz 
+    cd ruby-2.7.1/
+    ./configure --prefix=/usr/local/ruby
+    make
+    make install
+添加环境变量
+    echo "PATH=$PATH:/usr/local/ruby/bin" >> /etc/bashrc
+    source /etc/bashrc
+替换gem源
+    gem sources -l		#查看当前源
+    gem sources -a http://gems.ruby-china.com/      #增加源
+    gem sources --remove https://rubygems.org/      #删除原有源
+    
+    
+    
+    
+    
+    
+cp  config/database.yml.example   config/database.yml
+
+然后再根据刚刚创建的redmine数据库修改config/database.yml：
+
+production:
+
+  adapter: mysql
+
+  database: redmine
+
+  host: localhost
+
+  username: redmine
+
+  password: "my_password"
+
+  encoding: utf8
+  
+  
+  
+（2）接下来安装gem的依赖项
+
+gem install bundler
+
+（3）进入到redmine主目录，执行以下命令：
+
+cd /fileServer/redmine
+
+bundle install --without development test
+
+（4）生成存储session加密文件
+
+bundle exec rake generate_secret_token
+
+（5）初始化数据库，依次执行以下命令：
+
+RAILS_ENV=production bundle exec rake db:migrate
+
+（6）数据库的默认设置
+
+RAILS_ENV=production bundle exec rake redmine:load_default_data
+
+
+5. Redmine配置
+rake generate_secret_token
+
+RAILS_ENV=production rake db:migrate
+
+RAILS_ENV=production rake redmine:load_default_data
+
+6. 文件系统权限设置
+在Redmine下建立文件夹并设置相应权限
+
+mkdir -p tmp tmp/pdf public/plugin_assets
+
+sudo chmod -R 755 files log tmp public/plugin_assets
+
+7. 运行测试
+至此Redmine就安装完成了，现在就可以运行测试了。运行下面的命令进行测试：
+
+ruby script/rails server webrick -e production
+
+出错的话改用：
+
+ruby bin/rails server webrick -e production
+
+ 
+
+运行上面的服务之后，我们就可以在浏览器中输入http://192.168.1.153:3000 来测试。如果安装成功就会出现下面的网站界面：
+
+初始用户名/密码：admin/admin
+
+但是这样启动之后中断窗口是不能关闭的，如果要像服务一样启动，得添加-d参数：
+
+ruby script/server webrick -e production -d
+
+如果想要关闭服务，可以通过查看该服务的PID来关闭：
+
+cat redmine/tmp/pids/server.pid
+
+kill -9 [PID]
+
+ 
+
+8. 邮件服务配置
+邮件服务配置需要修改config/configuration.yml，我的一个可以成功发送邮件的配置是：
+
+# default configuration options for all environments
+
+default:
+
+  # Outgoing emails configuration (see examples above)
+
+  email_delivery:
+
+    delivery_method: :smtp
+
+    smtp_settings:
+
+      address: localhost
+
+      port: 25
+
+      domain: 163.com
+
+      authentication: :login
+
+ 
+
+      user_name: "邮箱"
+
+      password: "授权码密码"（注意缩进）
+然后重启redmine服务，在管理>>配置>>邮件通知 中选择发送测试邮件进行测试。
+
+9. 移动端登陆redminePM
+（扫码下载）
+
+在管理>>配置>>API ，将”启用REST web service”选中即可在移动端登陆需连接公司的wifi。
