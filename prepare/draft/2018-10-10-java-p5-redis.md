@@ -65,6 +65,32 @@ skiplist是一种跳跃表，它实现了有序集合中的快速查找，在大
 从一定程度上减轻数据库压力，但是锁机制使得逻辑的复杂度增加，吞吐量也降低了，有点治标不治本。
 布隆过滤器
 guava BloomFilter<Integer> bloomFilter = BloomFilter.create(Funnels.integerFunnel(), capacity);
+
+雪崩
+--- 发生场景，系统对热点数据做缓存，并且缓存时间固定，如果在同一时刻失效，导致大量请求直接访问数据库，数据库没有扛住，直接宕机，重启之后，又被新的请求击垮
+--- 影响：如果罢工的是关键数据服务器，会导致与其直接相关的，没有熔断策略的服务无法使用，接口报错，当访问量下降时，服务可以重启，但是
+--- 解决方案：不设置缓存失效时间，数据新增、必要再刷新；清除慢SQL，分库、大表分表，提高查询效率；Redis集群部署，将数据访问分布到不同分片上；缓存时间增加随机值，保证数据不会在同一时刻大面积失效；
+
+穿透
+--- 发生场景，数据库和缓存中都没有数据，持续访问，空值结果也没有缓存，导致一直访问数据库
+--- 影响，导致数据库压力过大，以至于击跨数据库
+--- 非法参数校验；无结果的访问页缓存
+
+击穿
+--- 发生场景，大量请求一直请求一个热点数据，该缓存扛着大量并发，某一时刻该热点数据缓存失效，导致大量请求涌向数据库
+--- 影响，和雪崩类似，但是但是只是个别数据失效的问题
+--- 不设置缓存失效时间
+
+
+缓存穿透我会在接口层增加校验，比如用户鉴权校验，参数做校验，不合法的参数直接代码Return
+任何可能的参数情况都应该被考虑到，做校验，经验学
+从缓存取不到的数据，在数据库中也没有取到，这时也可以将对应Key的Value对写为null、位置错误、稍后重试这样的值具体取啥问产品，或者看具体的场景，缓存有效时间可以设置短点，如30秒
+对单个IP每秒访问次数超出阈值的IP都拉黑。
+
+事前：Redis 高可用，主从+哨兵，Redis cluster，避免全盘崩溃。
+事中：本地 ehcache 缓存 + Hystrix 限流+降级，避免 MySQL 被打死。
+事后：Redis 持久化 RDB+AOF，一旦重启，自动从磁盘上加载数据，快速恢复缓存数据。
+
  
 3. 如何使用Redis来实现分布式锁
 要确保锁的实现同时满足以下四个条件：
@@ -215,6 +241,53 @@ maxmemory可以在运行时动态设置，例如：CONFIG SET maxmemory "100mb"�
 maxmemory-policy同样可以在运行时设置，用户可以根据内存的使用情况动态的修改淘汰策略。
 
 
+Redis Sentinel 原理
+
+1、Sentinel 集群通过给定的配置文件发现 master，启动时会监控 master。通过向 master 发送 info 信息获得该服务器下面的所有从服务器。
+2、Sentinel 集群通过命令连接向被监视的主从服务器发送 hello 信息 (每秒一次)，该信息包括 Sentinel 本身的 IP、端口、id 等内容，以此来向其他 Sentinel 宣告自己的存在。
+3、Sentinel 集群通过订阅连接接收其他 Sentinel 发送的 hello 信息，以此来发现监视同一个主服务器的其他 Sentinel；集群之间会互相创建命令连接用于通信，因为已经有主从服务器作为发送和接收 hello 信息的中介，Sentinel 之间不会创建订阅连接。
+4、Sentinel 集群使用 ping 命令来检测实例的状态，如果在指定的时间内（down-after-milliseconds）没有回复或则返回错误的回复，那么该实例被判为下线。
+5、当 failover 主备切换被触发后，failover 并不会马上进行，还需要 Sentinel 中的大多数 Sentinel 授权后才可以进行 failover，即进行 failover 的 Sentinel 会去获得指定 quorum 个的 Sentinel 的授权，成功后进入 ODOWN 状态。如在 5 个 Sentinel 中配置了 2 个 quorum，等到 2 个 Sentinel 认为 master 死了就执行 failover。
+6、Sentinel 向选为 master 的 slave 发送 SLAVEOF NO ONE 命令，选择 slave 的条件是 Sentinel 首先会根据 slaves 的优先级来进行排序，优先级越小排名越靠前。如果优先级相同，则查看复制的下标，哪个从 master 接收的复制数据多，哪个就靠前。如果优先级和下标都相同，就选择进程 ID 较小的。
+7、Sentinel 被授权后，它将会获得宕掉的 master 的一份最新配置版本号 (config-epoch)，当 failover 执行结束以后，这个版本号将会被用于最新的配置，通过广播形式通知其它 Sentinel，其它的 Sentinel 则更新对应 master 的配置。
+
+1 到 3 是自动发现机制:
+
+以 10 秒一次的频率，向被监视的 master 发送 info 命令，根据回复获取 master 当前信息。
+以 1 秒一次的频率，向所有 redis 服务器、包含 Sentinel 在内发送 PING 命令，通过回复判断服务器是否在线。
+以 2 秒一次的频率，通过向所有被监视的 master，slave 服务器发送当前 Sentinel master 信息的消息。
+4 是检测机制，5 和 6 是 failover 机制，7 是更新配置机制。
+
+常用的 Redis 高可用架构。
+
+Redis Sentinel 集群 + 内网 DNS + 自定义脚本
+Redis Sentinel 集群 + VIP + 自定义脚本
+封装客户端直连 Redis Sentinel 端口
+JedisSentinelPool，适合 Java
+Redis Sentinel 集群 + Keepalived/Haproxy
+Redis M/S + Keepalived
+Redis Cluster
+Twemproxy
+Codis
+
+主推以下方案：
+
+Redis Sentinel 集群 + 内网 DNS + 自定义脚本
+Redis Sentinel 集群 + VIP + 自定义脚本
+以下是实战过程中总结出的最佳实践：
+
+Redis Sentinel 集群建议使用 >= 5 台机器
+不同的大业务可以使用一套 Redis Sentinel 集群，代理该业务下的所有端口
+根据不同的业务划分好 Redis 端口范围
+自定义脚本建议采用 Python 实现，扩展便利
+自定义脚本需要注意判断当前的 Sentinel 角色
+自定义脚本传入参数：<service_name> <role> <comment> <from_ip> <from_port> <to_ip> <to_port>
+自定义脚本需要远程 ssh 操作机器，建议使用 paramiko 库，避免重复建立 SSH 连接，消耗时间
+加速 SSH 连接，建议关闭以下两个参数
+UseDNS no
+GSSAPIAuthentication no
+微信或者邮件告警，建议 fork 一个进程，避免主进程阻塞
+自动切换和故障切换，所有操作建议在 15s 以内完成
 
 
 
