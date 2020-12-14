@@ -2,8 +2,8 @@
 layout: post
 title:  "常用 Linux 命令"
 subtitle: ""
-bigimg: 
-tags: [Linux, Command]
+tags: [Linux]
+bigimg: https://www.openssh.com/images/openssh.gif
 comments: true
 ---
 
