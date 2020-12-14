@@ -854,3 +854,8 @@ python GIL，多线程并不能真正的并发。
 1、通过PoolingHttpClientConnectionManager.setValidateAfterInactivity(evictIdle);设置连接空闲多久以后需要进行validate检查
 2、通过HttpClientBuilder.evictIdleConnections(evictIdle, TimeUnit.MILLISECONDS)设置连接空闲多久后将被清理出连接池。
 因此只要我们配置上这两个参数，保证它小于服务端保持连接的时间就可以了。
+
+
+**[871]** git账号密码输入错误重新输入解决办法
+
+进入【控制面板\用户帐户\凭据管理器】，删除【普通凭据】下的git账号信息即可。

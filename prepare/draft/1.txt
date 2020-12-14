@@ -1,4 +1,5 @@
-﻿Elasticsearch 是一个分布式的 RESTful 风格的搜索和数据分析引擎，能够解决不断涌现出的各种用例。作为 Elastic Stack 的核心，它集中存储您的数据，帮助您发现意料之中以及意料之外的情况。
+﻿Elasticsearch 是一个分布式的 RESTful 风格的搜索和数据分析引擎，能够解决不断涌现出的各种用例。
+作为 Elastic Stack 的核心，它集中存储您的数据，帮助您发现意料之中以及意料之外的情况。
 
 
 Caffe，CNTK，DeepLearning4j，Keras，MXNet和TensorFlow是深度学习框架。Apache Mahout、H2O、Scikit-learning和Spark MLlib是机器学习框架。 Theano跨越了这两个类别。
