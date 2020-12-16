@@ -859,3 +859,42 @@ python GIL，多线程并不能真正的并发。
 **[871]** git账号密码输入错误重新输入解决办法
 
 进入【控制面板\用户帐户\凭据管理器】，删除【普通凭据】下的git账号信息即可。
+
+
+**[870]** 利用for-each循环不会有性能损失，实际上在某些情况下比起普通的for循环，它还有些性能优势，因为它对数组索引的边界值只计算一次。
+
+**[869]** 三种常见的情况无法使用for-each循环：
+
+过滤——如果需要遍历集合，并删除指定的元素，就需要使用显示的迭代器，以便可以调用它的remove方法
+转换——如果需要遍历列表或者数组，并取代它部分或者全部的元素值，就需要列表迭代器或者索引数组，以便设定元素的值
+平行迭代——如果需要并行地遍历多个集合，就需要显示的控制迭代器或者索引变量。以便所有迭代器啊或者索引变量都可以得到同步移动
+
+**[868]** 错误的比较器
+```java
+class A {
+    public static void main(String[] args){
+        Comparator<Integer> comparator = new Comparator<Integer>(){
+           public int compare(Integer first,Integer second){
+               return first < second ? -1:(first == second ? 0:1);
+           }
+        };
+    }
+}
+```
+打印comparator.compare(new Integer(42),new Integer(42))时，本应该打印出0，但是最后结果却是1，这表明第一个Integer值大于第二个。
+
+当执行first < second 时会使first和second引用的Integer类型被自动拆箱，但是后面再计算first == second时，因为是对象之间使用==比较，这时候比较的是对象的内存地址，如果是两个不同的对象就会返回false，所以不应该用==来比较两个对象的值。
+
+```java
+class A {
+    public static void main(String[] args){
+        Comparator<Integer> comparator = new Comparator<Integer>(){
+           public int compare(Integer first,Integer second){
+               int f = first;
+               int s = second;
+               return f < s ? -1:(f == s ? 0:1);
+           }
+        };
+    }
+}
+```
