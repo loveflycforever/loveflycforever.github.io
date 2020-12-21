@@ -117,5 +117,11 @@ static final int MIN_TREEIFY_CAPACITY = 64;
 
 
 
+Java7 ConcurrentHashMap
+concurrencyLevel：并行级别、并发数、Segment 数，怎么翻译不重要，理解它。
+默认是 16，也就是说 ConcurrentHashMap 有 16 个 Segments，所以理论上，这个时候，最多可以同时支持 16 个线程并发写，只要它们的操作分别分布在不同的 Segment 上。
+这个值可以在初始化的时候设置为其他值，但是一旦初始化以后，它是不可以扩容的。
+
+
 红黑树
 2-3树
