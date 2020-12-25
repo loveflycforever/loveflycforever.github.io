@@ -898,3 +898,8 @@ class A {
     }
 }
 ```
+
+**[867]** 初始化空字符串
+```text
+String target = new String(new char[8]).replace('\0', '0');
+```
