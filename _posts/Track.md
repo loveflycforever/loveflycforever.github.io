@@ -34,8 +34,6 @@
 
 # 1.1.1 数据采集
 
-数据的事情归结起来就两点：数据采集和数据分析。
-
 数据采集的基本原则是全和细。
 
 - 全，就是把多种数据源都进行采集，包括业务数据、日志数据和埋点行为数据等等。
@@ -44,19 +42,19 @@
 
 # 1.1.1.1 业务数据
 
-第一种是直接使用业务数据库做统计分析。一般的互联网产品，后端都有自己的业务数据库，里面存储了订单、用户注册信息等业务数据，基于这些数据，一些常用的统计分析都能够搞定。这种方式天然的就能分析业务数据，并且是实时、准确的。
+使用业务数据库做统计分析。一般的互联网产品，后端都有自己的业务数据库，里面存储了订单、用户注册信息等业务数据，基于这些数据，一些常用的统计分析都能够搞定。这种方式天然的就能分析业务数据，并且是实时、准确的。
 
 # 1.1.1.2 日志数据
 
-第二种是通过日志进行统计分析。这种方式相较于第二种，完成了数据的解耦，使业务数据和统计分析数据相互分离。
+通过日志进行统计分析。这种方式相较于使用业务数据来说，完成了数据的解耦，使业务数据和统计分析数据相互分离。
 
 # 1.1.1.3 外部接入数据
 
-第三种直接使用友盟、百度统计这样的第三方统计工具，嵌入SDK，来直接查看统计数据。这种方式的好处是简单、免费。对于看一些网站访问量、活跃用户量这样的宏观数据需求，基本能够满足。
+使用友盟、百度统计这样的第三方统计工具，通过嵌入SDK，来直接查看统计数据。这种方式的好处是简单、免费。对于看一些网站访问量、活跃用户量这样的宏观数据需求，基本能够满足。
 
 # 1.1.1.4 埋点行为数据
 
-第四种是通过埋点的方式，采集到的一些行为数据，如浏览、点击、停留时长等。
+通过埋点的方式，采集到的一些行为数据，如浏览、点击、停留时长等。
 
 # 1.1.2 数据预处理
 
@@ -74,11 +72,9 @@
 
 数据是产品的宝藏，数据分析就是产品设计中，挖宝藏的过程。
 
-![baozang](http://image.woshipm.com/wp-files/2019/12/oUhTf5HtjhK1pSDhSNEL.jpg)
+![oUhTf5HtjhK1pSDhSNEL](../img/oUhTf5HtjhK1pSDhSNEL.jpg)
 
 # 1.2.1 通过数据，我们可以统计什么？
-
-数据分析的基础就是数据源，数据源一般分为两部分：一部分叫用户行为数据；另一部分叫业务数据。这两种数据，会随着用户的操作，源源不断地产生。
 
 # 1.2.1.1 用户数据指标
 
@@ -176,6 +172,8 @@
 通过有效的埋点，可以收集和观察到用户在产品中的第一手数据资料。最真实的反映了产品的运行情况，是量化工作收益、计算KPI、ROI，通过数据在迭代时说服别人的重要依据，等等。
 
 # 1.3 基于数据埋点的数据分析怎么做
+
+用户操作 -> 行为分析 -> 推断结论
 
 # 1.3.1 用户操作
 
@@ -275,7 +273,7 @@
 >
 > 精益创业代表了一种不断形成创新的新方法，它源于“精益生产”的理念，提倡企业进行“验证性学习”， 先向市场推出极简的原型产品，然后在不断地试验和学习中，以最小的成本和有效的方式验证产品是否符合用户需求，灵活调整方向。如果产品不符合市场需求，最好能“快速地失败、廉价地失败”，而不要“ 昂贵地失败”；如果产品被用户认可也应该不断学习，挖掘用户需求，迭代优化产品。
 
-# 2.4 埋点可以做什么
+# 2.4 基于埋点的数据分析可以做什么
 
 1. 能够得到想要的数据解决/支持；
 
@@ -466,13 +464,11 @@
 
 通常记录用户行为的基本要素采用 5W1H 的方式，即原因（Why ）、人物（Who）、时间（When）、地点（Where）、行为（What）、方式（How）。
 
-完成需求指标的定义，并根据指标算法来梳理埋点事件。比如根据“分享率=分享量 / 访问量”，就可以定义出“分享页面”和“浏览页面”两个行为事件。
-
 围绕5W1H完善埋点属性的设计，并撰写埋点文档。除了支撑数据指标的计算需求外，还要能够支撑实际工作中可能出现的分析需求。
 
 
 
-用户什么原因在什么时间什么地点使用什么方式产生了什么样的行为来记录。
+用户因为什么在什么时间什么地点使用什么方式产生了什么样的行为来记录。
 
 # 3.3.4.2 WHY 原因
 
@@ -522,8 +518,6 @@
 事件所处环境和发生方式，常见的记录值有：网络环境（WIFI/4G）、系统版本（iOS 12.0.1/Android 8.0)、设备品牌（HUAWEI/XIAOMI/Apple）、设备型号、运营商、屏幕尺寸、用户来源等等。
 
 用户是怎么完成这个行为的，像上述这些信息都算，不止于此，看业务需要，可以继续扩充。
-
-
 
 # 3.3.4 管理埋点
 
@@ -1038,7 +1032,377 @@ A页面与B页面具备唯一主次关系， B页面仅能从A页面跳转进入
 
 
 
+<table>
+<tr>
+<td colspan=13><font size=1>某Feed流产品的埋点需求</font></td>
+</tr>
+<tr>
+<td><font size=1>事件编号</font></td>
+<td><font size=1>事件英文变量</font></td>
+<td><font size=1>事件显示名</font></td>
+<td><font size=1>时间定义</font></td>
+<td><font size=1>属性英文变量名</font></td>
+<td><font size=1>事件属性显示名</font></td>
+<td><font size=1>属性值类型</font></td>
+<td><font size=1>属性定义</font></td>
+<td><font size=1>当前状态</font></td>
+<td><font size=1>埋点形式</font></td>
+<td><font size=1>版本号</font></td>
+<td><font size=1>上线时间</font></td>
+<td><font size=1>备注</font></td>
+</tr>
+<tr>
+<td rowspan="7"><font size=1>1</font></td>
+<td rowspan="7"><font size=1>cardShow</font></td>
+<td rowspan="7"><font size=1>卡片展示</font></td>
+<td rowspan="7"><font size=1>1 动态卡片在用户可见的屏幕范围内出现就算一次展示
+2 岀规的定义：当前卡片的2/3高度露岀就算出规
+3 快速滑动时，不计算展示，等待列表停止滑动1s后再行计算
+4 单次访何中，同一卡片的展示不重复展示</font></td>
+<td></td>
+<td><font size=1>预置属性</font></td>
+<td><font size=1>字符串</font></td>
+<td></td>
+<td><font size=1>上线</font></td>
+<td rowspan="7"><font size=1>前端</font></td>
+<td><font size=1>V1.0.0</font></td>
+<td><font size=1>2020-10-20</font></td>
+<td></td>
+</tr>
+<tr>
+<td><font size=1>contentId</font></td>
+<td><font size=1>内容ID</font></td>
+<td><font size=1>字符串</font></td>
+<td><font size=1>从API返回的数据中提取contentId字段</font></td>
+<td><font size=1>上线</font></td>
+<td><font size=1>V1.0.0</font></td>
+<td><font size=1>2020-10-20</font></td>
+<td></td>
+</tr>
+<tr>
+<td><font size=1>contentType</font></td>
+<td><font size=1>内容类型</font></td>
+<td><font size=1>字符串</font></td>
+<td><font size=1>从API返回的数据中提取type字段</font></td>
+<td><font size=1>上线</font></td>
+<td><font size=1>V1.0.0</font></td>
+<td><font size=1>2020-10-20</font></td>
+<td><font size=1>常见值：article、video、course</font></td>
+</tr>
+<tr>
+<td><font size=1>position</font></td>
+<td><font size=1>列表位置</font></td>
+<td><font size=1>数值</font></td>
+<td><font size=1>按照客户实际加载的列表顺序进行赋值</font></td>
+<td><font size=1>上线</font></td>
+<td><font size=1>V1.0.0</font></td>
+<td><font size=1>2020-10-20</font></td>
+<td><font size=1>从1开始</font></td>
+</tr>
+<tr>
+<td><font size=1>recommendReason</font></td>
+<td><font size=1>推荐理由</font></td>
+<td><font size=1>字符串</font></td>
+<td><font size=1>从API返回的数据中提取reason字段</font></td>
+<td><font size=1>上线</font></td>
+<td><font size=1>V1.0.0</font></td>
+<td><font size=1>2020-10-20</font></td>
+<td><font size=1>常见值：hot、topic_base、social_base、history_base</font></td>
+</tr>
+<tr>
+<td><font size=1>channel</font></td>
+<td><font size=1>内容频道</font></td>
+<td><font size=1>字符串</font></td>
+<td><font size=1>从API返回的数据中提取channel字段</font></td>
+<td><font size=1>上线</font></td>
+<td><font size=1>V1.0.0</font></td>
+<td><font size=1>2020-10-20</font></td>
+<td><font size=1>當见值：course、experience、video、news</font></td>
+</tr>
+<tr>
+<td><font size=1>withPicture</font></td>
+<td><font size=1>有无图片</font></td>
+<td><font size=1>布尔值</font></td>
+<td><font size=1>从API返回的数据中判断pic是否有值</font></td>
+<td><font size=1>上线</font></td>
+<td><font size=1>V1.0.0</font></td>
+<td><font size=1>2020-10-20</font></td>
+<td></td>
+</tr>
+<tr>
+<td rowspan="9"><font size=1>2</font></td>
+<td rowspan="9"><font size=1>cardClick</font></td>
+<td rowspan="9"><font size=1>卡片点击</font></td>
+<td rowspan="9"><font size=1>1 用户点击动态卡片内可跳转的区域即算作一次点击</font></td>
+<td></td>
+<td><font size=1>预置属性</font></td>
+<td><font size=1>字符串</font></td>
+<td></td>
+<td><font size=1>上线</font></td>
+<td rowspan="9"><font size=1>前端</font></td>
+<td><font size=1>V1.0.0</font></td>
+<td><font size=1>2020-10-20</font></td>
+<td></td>
+</tr>
+<tr>
+<td><font size=1>contentId</font></td>
+<td><font size=1>内容ID</font></td>
+<td><font size=1>字符串</font></td>
+<td><font size=1>从API返回的数据中提取contentId字段</font></td>
+<td><font size=1>上线</font></td>
+<td><font size=1>V1.0.0</font></td>
+<td><font size=1>2020-10-20</font></td>
+<td></td>
+</tr>
+<tr>
+<td><font size=1>contentType</font></td>
+<td><font size=1>内容类型</font></td>
+<td><font size=1>字符串</font></td>
+<td><font size=1>从API返回的数据中提取type字段</font></td>
+<td><font size=1>上线</font></td>
+<td><font size=1>V1.0.0</font></td>
+<td><font size=1>2020-10-20</font></td>
+<td><font size=1>常见值：article、video、course</font></td>
+</tr>
+<tr>
+<td><font size=1>position</font></td>
+<td><font size=1>列表位置</font></td>
+<td><font size=1>数值</font></td>
+<td><font size=1>按照客户实际加载的列表顺序进行赋值</font></td>
+<td><font size=1>上线</font></td>
+<td><font size=1>V1.0.0</font></td>
+<td><font size=1>2020-10-20</font></td>
+<td><font size=1>从1开始</font></td>
+</tr>
+<tr>
+<td><font size=1>recommendReason</font></td>
+<td><font size=1>推荐理由</font></td>
+<td><font size=1>字符串</font></td>
+<td><font size=1>从API返回的数据中提取reason字段</font></td>
+<td><font size=1>上线</font></td>
+<td><font size=1>V1.0.0</font></td>
+<td><font size=1>2020-10-20</font></td>
+<td><font size=1>常见值：hot、topic_base、social_base、history_base</font></td>
+</tr>
+<tr>
+<td><font size=1>channel</font></td>
+<td><font size=1>内容频道</font></td>
+<td><font size=1>字符串</font></td>
+<td><font size=1>从API返回的数据中提取channel字段</font></td>
+<td><font size=1>上线</font></td>
+<td><font size=1>V1.0.0</font></td>
+<td><font size=1>2020-10-20</font></td>
+<td><font size=1>當见值：course、experience、video、news</font></td>
+</tr>
+<tr>
+<td><font size=1>withPicture</font></td>
+<td><font size=1>有无图片</font></td>
+<td><font size=1>布尔值</font></td>
+<td><font size=1>从API返回的数据中判断pic是否有值</font></td>
+<td><font size=1>上线</font></td>
+<td><font size=1>V1.0.0</font></td>
+<td><font size=1>2020-10-20</font></td>
+<td></td>
+</tr>
+<tr>
+<td><font size=1>comments</font></td>
+<td><font size=1>评论数</font></td>
+<td><font size=1>数值</font></td>
+<td><font size=1>从API返回的数据中提取comment_count字段</font></td>
+<td><font size=1>上线</font></td>
+<td><font size=1>V1.0.0</font></td>
+<td><font size=1>2020-10-20</font></td>
+<td></td>
+</tr>
+<tr>
+<td><font size=1>likes</font></td>
+<td><font size=1>点赞数</font></td>
+<td><font size=1>数值</font></td>
+<td><font size=1>从API返回的数据中提取like_count字段</font></td>
+<td><font size=1>上线</font></td>
+<td><font size=1>V1.0.0</font></td>
+<td><font size=1>2020-10-20</font></td>
+<td></td>
+</tr>
+<tr>
+<td rowspan="5"><font size=1>3</font></td>
+<td rowspan="5"><font size=1>adShow</font></td>
+<td rowspan="5"><font size=1>广告展示</font></td>
+<td rowspan="5"><font size=1>1 动态卡片在用户可见的屏幕范围内出现就输一次展示</font></td>
+<td></td>
+<td><font size=1>预置属性</font></td>
+<td><font size=1>字符串</font></td>
+<td></td>
+<td><font size=1>上线</font></td>
+<td rowspan="5"><font size=1>前端</font></td>
+<td><font size=1>V1.0.0</font></td>
+<td><font size=1>2020-10-20</font></td>
+<td></td>
+</tr>
+<tr>
+<td><font size=1>adId</font></td>
+<td><font size=1>广告ID</font></td>
+<td><font size=1>字符串</font></td>
+<td><font size=1>从API返回的数据中提取adId字段</font></td>
+<td><font size=1>上线</font></td>
+<td><font size=1>V1.0.0</font></td>
+<td><font size=1>2020-10-20</font></td>
+<td></td>
+</tr>
+<tr>
+<td><font size=1>adType</font></td>
+<td><font size=1>广告类型</font></td>
+<td><font size=1>字符串</font></td>
+<td><font size=1>从API返回的数据中提取type字段</font></td>
+<td><font size=1>上线</font></td>
+<td><font size=1>V1.0.0</font></td>
+<td><font size=1>2020-10-20</font></td>
+<td></td>
+</tr>
+<tr>
+<td><font size=1>position</font></td>
+<td><font size=1>列表位置</font></td>
+<td><font size=1>数值</font></td>
+<td><font size=1>按照客户实际加载的列表顺序进行赋值</font></td>
+<td><font size=1>上线</font></td>
+<td><font size=1>V1.0.0</font></td>
+<td><font size=1>2020-10-20</font></td>
+<td></td>
+</tr>
+<tr>
+<td><font size=1>duration</font></td>
+<td><font size=1>停留时长</font></td>
+<td><font size=1>数值</font></td>
+<td><font size=1>1 触发adShow事件时开始计时 
+2 滚动后当前广告卡片露岀区域低于2/3时结束计时
+3 用户有任何离开推荐tab的行为也结束计时（切换tab、退岀app、锁屏）</font></td>
+<td><font size=1>上线</font></td>
+<td><font size=1>V1.0.0</font></td>
+<td><font size=1>2020-10-20</font></td>
+<td></td>
+</tr>
+<tr>
+<td rowspan="4"><font size=1>4</font></td>
+<td rowspan="4"><font size=1>adClick</font></td>
+<td rowspan="4"><font size=1>广告点击</font></td>
+<td rowspan="4"><font size=1>1 用户点击广告卡片内可跳转的区域即算作一次点击</font></td>
+<td></td>
+<td><font size=1>预置属性</font></td>
+<td><font size=1>字符串</font></td>
+<td></td>
+<td><font size=1>上线</font></td>
+<td rowspan="4"><font size=1>前端</font></td>
+<td><font size=1>V1.0.0</font></td>
+<td><font size=1>2020-10-20</font></td>
+<td></td>
+</tr>
+<tr>
+<td><font size=1>adId</font></td>
+<td><font size=1>广告ID</font></td>
+<td><font size=1>字符串</font></td>
+<td><font size=1>从API返回的数据中提取adId字段</font></td>
+<td><font size=1>上线</font></td>
+<td><font size=1>V1.0.0</font></td>
+<td><font size=1>2020-10-20</font></td>
+<td></td>
+</tr>
+<tr>
+<td><font size=1>adType</font></td>
+<td><font size=1>广告类型</font></td>
+<td><font size=1>字符串</font></td>
+<td><font size=1>从API返回的数据中提取type字段</font></td>
+<td><font size=1>上线</font></td>
+<td><font size=1>V1.0.0</font></td>
+<td><font size=1>2020-10-20</font></td>
+<td></td>
+</tr>
+<tr>
+<td><font size=1>position</font></td>
+<td><font size=1>列表位置</font></td>
+<td><font size=1>数值</font></td>
+<td><font size=1>按照客户实际加载的列表顺序进行赋值</font></td>
+<td><font size=1>上线</font></td>
+<td><font size=1>V1.0.0</font></td>
+<td><font size=1>2020-10-20</font></td>
+<td></td>
+</tr>
+<tr>
+<td rowspan="3"><font size=1>5</font></td>
+<td rowspan="3"><font size=1>pullToRefresh</font></td>
+<td rowspan="3"><font size=1>下拉刷新</font></td>
+<td rowspan="3"><font size=1>1 用户在顶部下拉，触发接口刷新后，新内容渲染出來算作一次行为</font></td>
+<td></td>
+<td><font size=1>预置属性</font></td>
+<td><font size=1>字符串</font></td>
+<td></td>
+<td><font size=1>上线</font></td>
+<td rowspan="3"><font size=1>前端</font></td>
+<td><font size=1>V1.0.0</font></td>
+<td><font size=1>2020-10-20</font></td>
+<td></td>
+</tr>
+<tr>
+<td><font size=1>times</font></td>
+<td><font size=1>单日刷新次数</font></td>
+<td><font size=1>数值</font></td>
+<td><font size=1>1 记录单日刷新的次数
+2 单日的定义为自然日</font></td>
+<td><font size=1>上线</font></td>
+<td><font size=1>V1.0.0</font></td>
+<td><font size=1>2020-10-20</font></td>
+<td></td>
+</tr>
+<tr>
+<td><font size=1>interval</font></td>
+<td><font size=1>刷新间隔时长</font></td>
+<td><font size=1>数值</font></td>
+<td><font size=1>本次刷新时，用当前时间戳减去上一次API返回的时间戳</font></td>
+<td><font size=1>上线</font></td>
+<td><font size=1>V1.0.0</font></td>
+<td><font size=1>2020-10-20</font></td>
+<td></td>
+</tr>
+<tr>
+<td rowspan="3"><font size=1>6</font></td>
+<td rowspan="3"><font size=1>loadMore</font></td>
+<td rowspan="3"><font size=1>加载更多</font></td>
+<td rowspan="3"><font size=1>1 用户滚动到页面底部触发加载接口后. 新内容渲染出来算作一次成功加载</font></td>
+<td></td>
+<td><font size=1>预置属性</font></td>
+<td><font size=1>字符串</font></td>
+<td></td>
+<td><font size=1>上线</font></td>
+<td rowspan="3"><font size=1>前端</font></td>
+<td><font size=1>V1.0.0</font></td>
+<td><font size=1>2020-10-20</font></td>
+<td></td>
+</tr>
+<tr>
+<td><font size=1>depth</font></td>
+<td><font size=1>加载深度</font></td>
+<td><font size=1>数值</font></td>
+<td><font size=1>取当前列表position最大值</font></td>
+<td><font size=1>上线</font></td>
+<td><font size=1>V1.0.0</font></td>
+<td><font size=1>2020-10-20</font></td>
+<td></td>
+</tr>
+<tr>
+<td><font size=1>interval</font></td>
+<td><font size=1>刷新间隔时长</font></td>
+<td><font size=1>数值</font></td>
+<td><font size=1>本次加载时，用当前时间戳减去上一次API返回的时间戳</font></td>
+<td><font size=1>上线</font></td>
+<td><font size=1>V1.0.0</font></td>
+<td><font size=1>2020-10-20</font></td>
+<td></td>
+</tr>
+</table>
 
+
+
+
+完成需求指标的定义，并根据指标算法来梳理埋点事件。比如根据“分享率=分享量 / 访问量”，就可以定义出“分享页面”和“浏览页面”两个行为事件。
 
 关于埋点里的“事件”、“属性”和“属性值”，这里举个例子帮助大家理解：
 
@@ -1053,9 +1417,7 @@ A页面与B页面具备唯一主次关系， B页面仅能从A页面跳转进入
 关于这几点的概念，大家如果百度一下，也能清晰知道：
 
 - 事件指的是可以被记录到的操作和行为
-
 - 属性就是对于一个对象进行刻画的维度
-
 - 属性值是定义属性的特征或参数
 
 # 8.1 分析方法
