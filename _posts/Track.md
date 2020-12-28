@@ -197,7 +197,7 @@
 
 # 1.3.3 推断结论
 
-产品经理依照分析结论，按照产品优先级，在下一个迭代中加入了「排行榜展示及详情维度策略优化」等需求，上线后新版本排行榜购买率提升1%，GMV同比新增0.02%。
+产品经理依照分析结论，按照产品优先级，在下一个迭代中加入了“排行榜展示及详情维度策略优化”等需求，上线后新版本排行榜购买率提升1%，GMV同比新增0.02%。
 
 以上就是数据分析指导产品设计的理想流程，但要实现这种设计流程，可能需要整个研发团队的倾力协作去做好数据体系的搭建。
 
@@ -600,9 +600,9 @@
 
 对于点击行为，埋点会记录用户id、ip、点击时间、按钮名称、按钮所属页面名称，这些信息会落在另外的表中，后续基于这张表可以查询点击某元素的用户数等指标；这样的埋点模型是基于产品视角的，我们把用户对产品的操作分为几种类型，针对不同类的行为设置不同的字段；这是 PC 时代的设计方式，埋点能采集到的内容相对固定，能统计的指标也比较有限，也是 PV、UV、跳出率、停留时长这些，和业务数据打通比较困难，笔者就职的上一家公司，就采用这种模型来设计埋点。
 
-目前主流的埋点模型是「事件模型」，市面上提供用户行为分析服务的绝大多数厂商都采用这种模型，比如，GrowingIO、神策、诸葛IO、TalkingData、友盟、Mixpanel等。
+目前主流的埋点模型是“事件模型”，市面上提供用户行为分析服务的绝大多数厂商都采用这种模型，比如，GrowingIO、神策、诸葛IO、TalkingData、友盟、Mixpanel等。
 
-所谓的「事件模型」，其实是「事件 – 用户模型」，简单理解，我们把用户的行为记录为事件和用户，分别存在事件表和用户表中，事件表中记录 Who、When、Where、What、How，即谁在什么时间，什么地点，以什么样的方式，做了一件什么样的事，用户表里面记录了某个用户有什么样的属性特征，比如年龄、性别等。
+所谓的“事件模型”，其实是“事件 – 用户模型”，简单理解，我们把用户的行为记录为事件和用户，分别存在事件表和用户表中，事件表中记录 Who、When、Where、What、How，即谁在什么时间，什么地点，以什么样的方式，做了一件什么样的事，用户表里面记录了某个用户有什么样的属性特征，比如年龄、性别等。
 
 # 5.1 事件模型的优点
 
@@ -610,11 +610,15 @@
 
 相比于 PC 时代的页面模型，事件模型表达能力更强，能刻画更多类型的用户行为；因为，对于页面模型的埋点，在最开始的时候已经固定好了采集哪几种类型的行为，比如页面浏览、按钮点击、push点击等等，不同类型的埋点也确定了其中会采集哪些字段，如果后续业务同学想在某个埋点中新增个性化的字段是比较麻烦的。
 
-针对添加个性化字段的需求，一种解决方式是，我们在每类埋点中都预留一个 valvus 字段，以 k-v 的形式来记录此类埋点下所有个性化的字段，这样是可以解决问题，但成本比较高：
+针对添加个性化字段的需求，一种解决方式是，我们在每类埋点中都预留一个 value 字段，以 k-v 的形式来记录此类埋点下所有个性化的字段，这样是可以解决问题，但成本比较高：
 
 一个字段中存了多个信息，埋点元数据的管理成本增加；
+
 这样的字段非常灵活，难以约束业务方按照约定上报数据，有可能会出现一个 values 字段包含了上千个k-v，数据质量难以把控；
-在后期处理数据时，需要做额外的解析工作。另外，对于页面模型，如果后面要再采集一类埋点，需要重新设计一类埋点，后面的表、查询模型都要重新开发，非常的不灵活。
+
+在后期处理数据时，需要做额外的解析工作。
+
+另外，对于页面模型，如果后面要再采集一类埋点，需要重新设计一类埋点，后面的表、查询模型都要重新开发，非常的不灵活。
 
 # 5.1.2 可打通业务数据和行为数据，实现更精细的用户行为分析
 
@@ -622,18 +626,11 @@
 
 # 5.1.3 容易理解，埋点设计起来相对容易
 
-事件模型把用户和用户行为描述为「谁在什么时间，什么地点，以什么样的方式，做了一件什么样的事，这个用户有什么样的属性特征」，非常贴近自然语言，在很大程度上降低了模型的理解难度。
-
-鉴于业界主流已经从页面模型切换到事件模型了，建议在构建埋点体系时尽量采用事件模型。后面的埋点设计也会以事件模型来说。
-
-
 设计埋点是按照埋点模型把将业务需求翻译成为开发能懂的语言。
 
-如果采用事件模型，翻译过程可以概括为四个步骤：业务分析、定义指标、事件设计、属性设计。
+事件模型把用户行为描述为"谁在什么时间，什么地点，以什么样的方式，做了一件什么样的事"，非常贴近自然语言，在很大程度上降低了模型的理解难度。
 
-首先，需要梳理业务过程，然后针对细分的业务场景定义能够衡量业务目标的指标，确定埋点的内容和范围；之后就可以按照事件模型设计事件，以及事件下的属性了；比如，来看一个电商搜索的场景来看如何进行埋点设计。
-
-
+如果采用事件模型，过程可以概括为[四个步骤](#8.1 分析方法)：业务分析、定义指标、事件设计、属性设计。
 
 
 # 3.1 场景分析
@@ -897,11 +894,11 @@ A页面与B页面具备唯一主次关系， B页面仅能从A页面跳转进入
 
 除了可视化埋点还有一种无埋点方式，也叫全埋点，即事先尽可能收集所有控件的操作数据，然后再通过界面配置哪些数据需要在系统里面进行分析。
 
-当然它并不是真正的不需要写代码，而是前端通过加载一段定义好的SDK代码，自动采集全部事件并上报所有的数据，能够呈现用户行为的每一次点击、每一次跳转、每一次登录等全量、实时用户行为数据，并通过「圈选」来获取需要使用的事件。圈选数据不需要组织协作，产品经理不依赖任何人就能采集到数据，并马上在分析工具中使用，所见即所得。
+当然它并不是真正的不需要写代码，而是前端通过加载一段定义好的SDK代码，自动采集全部事件并上报所有的数据，能够呈现用户行为的每一次点击、每一次跳转、每一次登录等全量、实时用户行为数据，并通过“圈选”来获取需要使用的事件。圈选数据不需要组织协作，产品经理不依赖任何人就能采集到数据，并马上在分析工具中使用，所见即所得。
 
 相比于可视化埋点这种半自动化模式，全埋点不仅继承了可视化埋点的优点，同时解决了手工埋点和可视化埋点共同的一个缺点即数据回溯。
 
-以往花费几天的工作，借助无埋点秒级完成，简单、快捷；开发工作量少。而且圈选可以回溯过去7天数据，较好的解决了忘了「埋点」这个痛点。
+以往花费几天的工作，借助无埋点秒级完成，简单、快捷；开发工作量少。而且圈选可以回溯过去7天数据，较好的解决了忘了“埋点”这个痛点。
 
 比如产品想要看某个按钮的数据，可视化埋点只能做到从此刻以后的数据，在这之前的数据是没有的。
 
@@ -1030,375 +1027,7 @@ A页面与B页面具备唯一主次关系， B页面仅能从A页面跳转进入
 
 这里分享一款Feed流产品的数据采集案例，这里建议大家把这个案例中的埋点文档复原下来，形成自己的“埋点案例库”，以方便以后的学习和应用
 
-<table>
-<tr>
-<td colspan=13><font size=1>某Feed流产品的埋点需求</font></td>
-</tr>
-<tr>
-<td><font size=1>事件编号</font></td>
-<td><font size=1>事件英文变量</font></td>
-<td><font size=1>事件显示名</font></td>
-<td><font size=1>时间定义</font></td>
-<td><font size=1>属性英文变量名</font></td>
-<td><font size=1>事件属性显示名</font></td>
-<td><font size=1>属性值类型</font></td>
-<td><font size=1>属性定义</font></td>
-<td><font size=1>当前状态</font></td>
-<td><font size=1>埋点形式</font></td>
-<td><font size=1>版本号</font></td>
-<td><font size=1>上线时间</font></td>
-<td><font size=1>备注</font></td>
-</tr>
-<tr>
-<td rowspan="7"><font size=1>1</font></td>
-<td rowspan="7"><font size=1>cardShow</font></td>
-<td rowspan="7"><font size=1>卡片展示</font></td>
-<td rowspan="7"><font size=1>1 动态卡片在用户可见的屏幕范围内出现就算一次展示
-2 岀规的定义：当前卡片的2/3高度露岀就算出规
-3 快速滑动时，不计算展示，等待列表停止滑动1s后再行计算
-4 单次访何中，同一卡片的展示不重复展示</font></td>
-<td></td>
-<td><font size=1>预置属性</font></td>
-<td><font size=1>字符串</font></td>
-<td></td>
-<td><font size=1>上线</font></td>
-<td rowspan="7"><font size=1>前端</font></td>
-<td><font size=1>V1.0.0</font></td>
-<td><font size=1>2020-10-20</font></td>
-<td></td>
-</tr>
-<tr>
-<td><font size=1>contentId</font></td>
-<td><font size=1>内容ID</font></td>
-<td><font size=1>字符串</font></td>
-<td><font size=1>从API返回的数据中提取contentId字段</font></td>
-<td><font size=1>上线</font></td>
-<td><font size=1>V1.0.0</font></td>
-<td><font size=1>2020-10-20</font></td>
-<td></td>
-</tr>
-<tr>
-<td><font size=1>contentType</font></td>
-<td><font size=1>内容类型</font></td>
-<td><font size=1>字符串</font></td>
-<td><font size=1>从API返回的数据中提取type字段</font></td>
-<td><font size=1>上线</font></td>
-<td><font size=1>V1.0.0</font></td>
-<td><font size=1>2020-10-20</font></td>
-<td><font size=1>常见值：article、video、course</font></td>
-</tr>
-<tr>
-<td><font size=1>position</font></td>
-<td><font size=1>列表位置</font></td>
-<td><font size=1>数值</font></td>
-<td><font size=1>按照客户实际加载的列表顺序进行赋值</font></td>
-<td><font size=1>上线</font></td>
-<td><font size=1>V1.0.0</font></td>
-<td><font size=1>2020-10-20</font></td>
-<td><font size=1>从1开始</font></td>
-</tr>
-<tr>
-<td><font size=1>recommendReason</font></td>
-<td><font size=1>推荐理由</font></td>
-<td><font size=1>字符串</font></td>
-<td><font size=1>从API返回的数据中提取reason字段</font></td>
-<td><font size=1>上线</font></td>
-<td><font size=1>V1.0.0</font></td>
-<td><font size=1>2020-10-20</font></td>
-<td><font size=1>常见值：hot、topic_base、social_base、history_base</font></td>
-</tr>
-<tr>
-<td><font size=1>channel</font></td>
-<td><font size=1>内容频道</font></td>
-<td><font size=1>字符串</font></td>
-<td><font size=1>从API返回的数据中提取channel字段</font></td>
-<td><font size=1>上线</font></td>
-<td><font size=1>V1.0.0</font></td>
-<td><font size=1>2020-10-20</font></td>
-<td><font size=1>當见值：course、experience、video、news</font></td>
-</tr>
-<tr>
-<td><font size=1>withPicture</font></td>
-<td><font size=1>有无图片</font></td>
-<td><font size=1>布尔值</font></td>
-<td><font size=1>从API返回的数据中判断pic是否有值</font></td>
-<td><font size=1>上线</font></td>
-<td><font size=1>V1.0.0</font></td>
-<td><font size=1>2020-10-20</font></td>
-<td></td>
-</tr>
-<tr>
-<td rowspan="9"><font size=1>2</font></td>
-<td rowspan="9"><font size=1>cardClick</font></td>
-<td rowspan="9"><font size=1>卡片点击</font></td>
-<td rowspan="9"><font size=1>1 用户点击动态卡片内可跳转的区域即算作一次点击</font></td>
-<td></td>
-<td><font size=1>预置属性</font></td>
-<td><font size=1>字符串</font></td>
-<td></td>
-<td><font size=1>上线</font></td>
-<td rowspan="9"><font size=1>前端</font></td>
-<td><font size=1>V1.0.0</font></td>
-<td><font size=1>2020-10-20</font></td>
-<td></td>
-</tr>
-<tr>
-<td><font size=1>contentId</font></td>
-<td><font size=1>内容ID</font></td>
-<td><font size=1>字符串</font></td>
-<td><font size=1>从API返回的数据中提取contentId字段</font></td>
-<td><font size=1>上线</font></td>
-<td><font size=1>V1.0.0</font></td>
-<td><font size=1>2020-10-20</font></td>
-<td></td>
-</tr>
-<tr>
-<td><font size=1>contentType</font></td>
-<td><font size=1>内容类型</font></td>
-<td><font size=1>字符串</font></td>
-<td><font size=1>从API返回的数据中提取type字段</font></td>
-<td><font size=1>上线</font></td>
-<td><font size=1>V1.0.0</font></td>
-<td><font size=1>2020-10-20</font></td>
-<td><font size=1>常见值：article、video、course</font></td>
-</tr>
-<tr>
-<td><font size=1>position</font></td>
-<td><font size=1>列表位置</font></td>
-<td><font size=1>数值</font></td>
-<td><font size=1>按照客户实际加载的列表顺序进行赋值</font></td>
-<td><font size=1>上线</font></td>
-<td><font size=1>V1.0.0</font></td>
-<td><font size=1>2020-10-20</font></td>
-<td><font size=1>从1开始</font></td>
-</tr>
-<tr>
-<td><font size=1>recommendReason</font></td>
-<td><font size=1>推荐理由</font></td>
-<td><font size=1>字符串</font></td>
-<td><font size=1>从API返回的数据中提取reason字段</font></td>
-<td><font size=1>上线</font></td>
-<td><font size=1>V1.0.0</font></td>
-<td><font size=1>2020-10-20</font></td>
-<td><font size=1>常见值：hot、topic_base、social_base、history_base</font></td>
-</tr>
-<tr>
-<td><font size=1>channel</font></td>
-<td><font size=1>内容频道</font></td>
-<td><font size=1>字符串</font></td>
-<td><font size=1>从API返回的数据中提取channel字段</font></td>
-<td><font size=1>上线</font></td>
-<td><font size=1>V1.0.0</font></td>
-<td><font size=1>2020-10-20</font></td>
-<td><font size=1>當见值：course、experience、video、news</font></td>
-</tr>
-<tr>
-<td><font size=1>withPicture</font></td>
-<td><font size=1>有无图片</font></td>
-<td><font size=1>布尔值</font></td>
-<td><font size=1>从API返回的数据中判断pic是否有值</font></td>
-<td><font size=1>上线</font></td>
-<td><font size=1>V1.0.0</font></td>
-<td><font size=1>2020-10-20</font></td>
-<td></td>
-</tr>
-<tr>
-<td><font size=1>comments</font></td>
-<td><font size=1>评论数</font></td>
-<td><font size=1>数值</font></td>
-<td><font size=1>从API返回的数据中提取comment_count字段</font></td>
-<td><font size=1>上线</font></td>
-<td><font size=1>V1.0.0</font></td>
-<td><font size=1>2020-10-20</font></td>
-<td></td>
-</tr>
-<tr>
-<td><font size=1>likes</font></td>
-<td><font size=1>点赞数</font></td>
-<td><font size=1>数值</font></td>
-<td><font size=1>从API返回的数据中提取like_count字段</font></td>
-<td><font size=1>上线</font></td>
-<td><font size=1>V1.0.0</font></td>
-<td><font size=1>2020-10-20</font></td>
-<td></td>
-</tr>
-<tr>
-<td rowspan="5"><font size=1>3</font></td>
-<td rowspan="5"><font size=1>adShow</font></td>
-<td rowspan="5"><font size=1>广告展示</font></td>
-<td rowspan="5"><font size=1>1 动态卡片在用户可见的屏幕范围内出现就输一次展示</font></td>
-<td></td>
-<td><font size=1>预置属性</font></td>
-<td><font size=1>字符串</font></td>
-<td></td>
-<td><font size=1>上线</font></td>
-<td rowspan="5"><font size=1>前端</font></td>
-<td><font size=1>V1.0.0</font></td>
-<td><font size=1>2020-10-20</font></td>
-<td></td>
-</tr>
-<tr>
-<td><font size=1>adId</font></td>
-<td><font size=1>广告ID</font></td>
-<td><font size=1>字符串</font></td>
-<td><font size=1>从API返回的数据中提取adId字段</font></td>
-<td><font size=1>上线</font></td>
-<td><font size=1>V1.0.0</font></td>
-<td><font size=1>2020-10-20</font></td>
-<td></td>
-</tr>
-<tr>
-<td><font size=1>adType</font></td>
-<td><font size=1>广告类型</font></td>
-<td><font size=1>字符串</font></td>
-<td><font size=1>从API返回的数据中提取type字段</font></td>
-<td><font size=1>上线</font></td>
-<td><font size=1>V1.0.0</font></td>
-<td><font size=1>2020-10-20</font></td>
-<td></td>
-</tr>
-<tr>
-<td><font size=1>position</font></td>
-<td><font size=1>列表位置</font></td>
-<td><font size=1>数值</font></td>
-<td><font size=1>按照客户实际加载的列表顺序进行赋值</font></td>
-<td><font size=1>上线</font></td>
-<td><font size=1>V1.0.0</font></td>
-<td><font size=1>2020-10-20</font></td>
-<td></td>
-</tr>
-<tr>
-<td><font size=1>duration</font></td>
-<td><font size=1>停留时长</font></td>
-<td><font size=1>数值</font></td>
-<td><font size=1>1 触发adShow事件时开始计时 
-2 滚动后当前广告卡片露岀区域低于2/3时结束计时
-3 用户有任何离开推荐tab的行为也结束计时（切换tab、退岀app、锁屏）</font></td>
-<td><font size=1>上线</font></td>
-<td><font size=1>V1.0.0</font></td>
-<td><font size=1>2020-10-20</font></td>
-<td></td>
-</tr>
-<tr>
-<td rowspan="4"><font size=1>4</font></td>
-<td rowspan="4"><font size=1>adClick</font></td>
-<td rowspan="4"><font size=1>广告点击</font></td>
-<td rowspan="4"><font size=1>1 用户点击广告卡片内可跳转的区域即算作一次点击</font></td>
-<td></td>
-<td><font size=1>预置属性</font></td>
-<td><font size=1>字符串</font></td>
-<td></td>
-<td><font size=1>上线</font></td>
-<td rowspan="4"><font size=1>前端</font></td>
-<td><font size=1>V1.0.0</font></td>
-<td><font size=1>2020-10-20</font></td>
-<td></td>
-</tr>
-<tr>
-<td><font size=1>adId</font></td>
-<td><font size=1>广告ID</font></td>
-<td><font size=1>字符串</font></td>
-<td><font size=1>从API返回的数据中提取adId字段</font></td>
-<td><font size=1>上线</font></td>
-<td><font size=1>V1.0.0</font></td>
-<td><font size=1>2020-10-20</font></td>
-<td></td>
-</tr>
-<tr>
-<td><font size=1>adType</font></td>
-<td><font size=1>广告类型</font></td>
-<td><font size=1>字符串</font></td>
-<td><font size=1>从API返回的数据中提取type字段</font></td>
-<td><font size=1>上线</font></td>
-<td><font size=1>V1.0.0</font></td>
-<td><font size=1>2020-10-20</font></td>
-<td></td>
-</tr>
-<tr>
-<td><font size=1>position</font></td>
-<td><font size=1>列表位置</font></td>
-<td><font size=1>数值</font></td>
-<td><font size=1>按照客户实际加载的列表顺序进行赋值</font></td>
-<td><font size=1>上线</font></td>
-<td><font size=1>V1.0.0</font></td>
-<td><font size=1>2020-10-20</font></td>
-<td></td>
-</tr>
-<tr>
-<td rowspan="3"><font size=1>5</font></td>
-<td rowspan="3"><font size=1>pullToRefresh</font></td>
-<td rowspan="3"><font size=1>下拉刷新</font></td>
-<td rowspan="3"><font size=1>1 用户在顶部下拉，触发接口刷新后，新内容渲染出來算作一次行为</font></td>
-<td></td>
-<td><font size=1>预置属性</font></td>
-<td><font size=1>字符串</font></td>
-<td></td>
-<td><font size=1>上线</font></td>
-<td rowspan="3"><font size=1>前端</font></td>
-<td><font size=1>V1.0.0</font></td>
-<td><font size=1>2020-10-20</font></td>
-<td></td>
-</tr>
-<tr>
-<td><font size=1>times</font></td>
-<td><font size=1>单日刷新次数</font></td>
-<td><font size=1>数值</font></td>
-<td><font size=1>1 记录单日刷新的次数
-2 单日的定义为自然日</font></td>
-<td><font size=1>上线</font></td>
-<td><font size=1>V1.0.0</font></td>
-<td><font size=1>2020-10-20</font></td>
-<td></td>
-</tr>
-<tr>
-<td><font size=1>interval</font></td>
-<td><font size=1>刷新间隔时长</font></td>
-<td><font size=1>数值</font></td>
-<td><font size=1>本次刷新时，用当前时间戳减去上一次API返回的时间戳</font></td>
-<td><font size=1>上线</font></td>
-<td><font size=1>V1.0.0</font></td>
-<td><font size=1>2020-10-20</font></td>
-<td></td>
-</tr>
-<tr>
-<td rowspan="3"><font size=1>6</font></td>
-<td rowspan="3"><font size=1>loadMore</font></td>
-<td rowspan="3"><font size=1>加载更多</font></td>
-<td rowspan="3"><font size=1>1 用户滚动到页面底部触发加载接口后. 新内容渲染出来算作一次成功加载</font></td>
-<td></td>
-<td><font size=1>预置属性</font></td>
-<td><font size=1>字符串</font></td>
-<td></td>
-<td><font size=1>上线</font></td>
-<td rowspan="3"><font size=1>前端</font></td>
-<td><font size=1>V1.0.0</font></td>
-<td><font size=1>2020-10-20</font></td>
-<td></td>
-</tr>
-<tr>
-<td><font size=1>depth</font></td>
-<td><font size=1>加载深度</font></td>
-<td><font size=1>数值</font></td>
-<td><font size=1>取当前列表position最大值</font></td>
-<td><font size=1>上线</font></td>
-<td><font size=1>V1.0.0</font></td>
-<td><font size=1>2020-10-20</font></td>
-<td></td>
-</tr>
-<tr>
-<td><font size=1>interval</font></td>
-<td><font size=1>刷新间隔时长</font></td>
-<td><font size=1>数值</font></td>
-<td><font size=1>本次加载时，用当前时间戳减去上一次API返回的时间戳</font></td>
-<td><font size=1>上线</font></td>
-<td><font size=1>V1.0.0</font></td>
-<td><font size=1>2020-10-20</font></td>
-<td></td>
-</tr>
-</table>
-
-
-
+[表格](../img/表格.html)
 
 完成需求指标的定义，并根据指标算法来梳理埋点事件。比如根据“分享率=分享量 / 访问量”，就可以定义出“分享页面”和“浏览页面”两个行为事件。
 
@@ -1420,18 +1049,33 @@ A页面与B页面具备唯一主次关系， B页面仅能从A页面跳转进入
 
 # 8.1 分析方法
 
-- 业务分解：梳理确认业务流程、操作路径和不同细分场景、定义用户行为路径。
-- 分析指标：对特定的事件进行定义、核心业务指标需要的数据。
-- 事件设计：启动，退出、页面浏览、事件曝光、点击。
-- 属性设计：用户属性、事件属性、对象属性、环境属性。
+1. 业务分解
+2. 分析指标
+3. 事件设计
+4. 属性设计
+
+比如，来看一个电商搜索的场景来看如何进行埋点设计。
 
 # 8.1.1 业务分析
 
-梳理业务流程，以及每个业务流程下的用户路径和各种细分场景。
+梳理确认业务流程，以及每个业务流程下的用户操作路径和各种细分场景。一般思路是根据用户在产品上具体的操作步骤，定义用户行为路径。
 
-一般思路是根据用户在产品上具体的操步骤，定义用户行为路径。
+在电商搜索的场景中，核心操作步骤如下：
 
-比如在电商搜索的场景中，核心操作步骤是用户发起搜索/ 点击搜索结果/购买商品，那么就可以把业务分解为「输入关键词搜索」、「点击返回搜索结果」、「购买商品」，在「输入关键词搜索」环节；可以通过输入的关键词，分析用户对不同商品的需求情况，在「点击返回搜索结果」环节，可以评估不同关键词运营状况是否健康；譬如，是否存在没有搜索结果返回的关键词，或者用户点击的搜索结果排在很后面等等。
+```mermaid
+
+graph LR
+A((用户)) --> B[发起搜索]
+B --> C[点击搜索结果]
+C --> D[购买商品]
+D --> E(退出)
+```
+
+那么就可以把业务分解为”输入关键词搜索“、“点击返回的搜索结果”、”购买商品“。
+
+在“输入关键词搜索”环节；可以通过输入的关键词，分析用户对不同商品的需求情况。
+
+在“点击返回搜索结果”环节，可以评估不同关键词运营状况是否健康；譬如，是否存在没有搜索结果返回的关键词，或者用户点击的搜索结果排在很后面等等。
 
 # 8.1.2 指标拆解
 
@@ -1439,57 +1083,76 @@ A页面与B页面具备唯一主次关系， B页面仅能从A页面跳转进入
 
 一般来说功能/业务的迭代，一定是有一个产品目标，可以是解决某个需求，也可以是提升某个产品数据；关键指标就是衡量这个预期目标的可量化的指标，这里包含2个概念：
 
-- 预期目标：本次迭代的目标，例如活动创造XX GMV，搜索满足度等等。
+- 预期目标：本次迭代的目标，例如活动创造GMV，搜索满足度等等。
 
 - 可量化：相应的，目标一定要可量化，例如成单转化率（某链路成单用户数/参与链路的用户数），搜索排序前3内容的点击率等。
 
 在电商搜索的场景中，常见的分析是视角是：
 
-- 用户对不同商品的需求情况如何，相关的指标是「不同关键词的搜索次数/人数」；
+- 用户对不同商品的需求情况如何，相关的指标是“不同关键词的搜索次数/人数”；
 
-- 不同关键词当前的健康度如何，相关的指标是「搜索结果点击人数/次数」、「搜索结果点击率」、「不同关键词返回结果数」、「搜索结果点击位置均值」等；
+- 不同关键词当前的健康度如何，相关的指标是“搜索结果点击人数/次数”、“搜索结果点击率”、“不同关键词返回结果数”、“搜索结果点击位置均值”等；
 
-- 用户对商品的需求是否都能得到满足，相关的指标是「不同关键词返回结果数」、「关键词返回结果点击-成功购买的转化漏斗」
+- 用户对商品的需求是否都能得到满足，相关的指标是“不同关键词返回结果数”、“关键词返回结果点击-成功购买的转化漏斗”
 
 此时，我们就完成了指标定义。
 
 # 8.1.3 事件设计
 
-在上面的步骤中，我们定义出了「不同关键词的搜索次数/人数」、「搜索结果点击人数/次数」、「搜索结果点击率」、「不同关键词返回结果数」、「搜索结果点击位置均值」、「关键词返回结果点击-成功购买的转化漏斗」等要统计的指标。
+事件包括但不限于启动，退出、页面浏览、事件曝光、点击，等等。
 
-事件设计，其实就是把指标中设计也行为提炼出来；回来电商搜索这个例子中，我们可以提炼出七个用户行为，分别是：「点击搜索按钮」、「返回搜索结果」、「点击搜索结果」、「浏览商品详情页」、「商品加入购物车」、「确认订单」、「支付订单」。
+在上面的步骤中，我们定义出了“不同关键词的搜索次数/人数”、“搜索结果点击人数/次数”、“搜索结果点击率”、“不同关键词返回结果数”、“搜索结果点击位置均值”、“关键词返回结果点击-成功购买的转化漏斗”等要统计的指标。
 
-在实际的设计中，有一个重要的问题需要考虑：针对某个具体的行为是否需要设计单独的事件，比如「点击搜索按钮」这个行为是否可以用「APP 元素点击」这个事件采集，还是需要有一个单独的「点击搜索按钮」事件去采集？
+事件设计，其实就是把指标中设计也行为提炼出来；电商搜索这个例子中，可以提炼出七个用户行为，分别是：“点击搜索按钮”、“返回搜索结果”、“点击搜索结果”、“浏览商品详情页”、“商品加入购物车”、“确认订单”、“支付订单”。
 
-在这个问题上，有两条经验分享：
+在实际的设计中，有一个重要的问题需要考虑：针对某个具体的行为是否需要设计单独的事件，比如“点击搜索按钮”这个行为是否可以用“APP 元素点击”这个事件采集，还是需要有一个单独的“点击搜索按钮”事件去采集？
 
-对于重要的点击事件，建议单独设置事件采集，而不要使用「APP 元素点击」「Web 元素点击」等这样的全埋点事件。重要的点击事件往往需要记录更全面、更精细的字段，需要根据具体的点击事件的类型以及个性化属性，进行归类采集；常见的点击事件有 Banner 位点击、ICON 点击、频道 TAB、功能重要操作点击等事件。
+> 对于重要的点击事件，建议单独设置事件采集，而不要使用“APP 元素点击”“Web 元素点击”等这样的全埋点事件。
 
-有两个相似的行为，如「信息流广告点击」和「Banner 广告位点击」这两个行为，由于要记录较多丰富的属性，已确定要设置单独的事件；但这两个事件采集的字段非常相似，都需要采集广告 id、广告名称、排序、所属页面等字段，是按照下面的 a 方案采集，还是 b 方案采集呢？
-
-这里需要回到业务，如果在后续的分析中业务需要将信息流广告和 Banner 广告汇总起来看总的广告点击次数/人数；那需要按照 a 方案合并设计，如果后续业务上不会合并看数据，建议按照 b 方案分开设计（其实 a 方案也能满足分别统计两种广告的需求，不过查询要麻烦一些）。
+重要的点击事件往往需要记录更全面、更精细的字段，需要根据具体的点击事件的类型以及个性化属性，进行归类采集；常见的点击事件有 Banner 位点击、Icon 点击、频道 Tab、功能重要操作点击等事件。
 
 另外，在事件设计时还需要说明数据的采集时机以及在哪个端采集。
 
-举个例子，我们设计了一个「信息流条目曝光」的埋点事件，如果不对采集时机加以说明，研发很有可能在信息流条目只在屏幕上露出 50% 时就采集上报数据，而业务需要的是信息流条目在屏幕上完全露出时才采集上报；于是，在事件设计时需要描述清楚在什么样的情况下会触发事件数据的采集。
+举个例子，我们设计了一个“信息流条目曝光”的埋点事件，如果不对采集时机加以说明，研发很有可能在信息流条目只在屏幕上露出 50% 时就采集上报数据，而业务需要的是信息流条目在屏幕上完全露出时才采集上报；于是，在事件设计时需要描述清楚在什么样的情况下会触发事件数据的采集。
 
 从事件上报的触发逻辑上面来讲，可分为前端触发上报、前端获取后端汇总结果后上报、后端触发上报、后端获取前端属性后上报四个比较类别，如下图所示。
 
-![类别](http://image.woshipm.com/wp-files/2020/11/vLcd2xptyfQAbsJfkQoG.png)
+<table>
+    <tr>
+        <td>方式</td>
+        <td>说明</td>
+    </tr>
+    <tr>
+        <td>前端触发上报</td>
+        <td>事件埋点所有信息由前端产生，由前端上报</td>
+    </tr>
+    <tr>
+        <td>前端获取后端汇总结果上报</td>
+        <td>事件埋点部分属性由前端产生，部分由服务端产生，后者产生的信息传到前端，汇总后由前端上报</td>
+    </tr>
+    <tr>
+        <td>后端触发上报</td>
+        <td>事件埋点所有信息由后端产生，由后端上报</td>
+    </tr>
+    <tr>
+        <td>后端获取前端属性后上报</td>
+        <td>事件埋点部分属性由后端产生，部分由前端产生，后者产生的信息传到后端，汇总后由后端上报</td>
+    </tr>
+</table>
 
 
-前端触发就上报：点击「立即付款」按钮就触发，这是最常见的前端采集方式，如果业务方是想了解「用户是否有意愿支付」，那么当用户点击「支付订单」这个按钮或者发出支付请求就采集即可。
+前端触发就上报：点击“立即付款”按钮就触发，这是最常见的前端采集方式，如果业务方是想了解“用户是否有意愿支付”，那么当用户点击“支付订单”这个按钮或者发出支付请求就采集即可。
 
 前端获取后端汇总后上报：这种方式一般是由于除了记录用户操作外，还需要获取用户操作的结果；比如需要收到后端结果的返回，以判断用户是否支付成功，以及失败情况下具体的报错原因，那么其触发机制必须等到前端拿到后端服务器处理结果后，再进行上报。
 
 后端触发就上报：这种方式是指后端处理后直接上报，比如后端处理付款请求出结果时直接后端触发上报；采用这种方式的主要好处是数据不会出现漏报，但也由于是后端直接上报，基本是拿不到用户的设备终端及软硬件环境属性的，比如用户在支付时使用的是什么设备、网络环境是什么等信息。
 
-后端获取前端属性且触发上报：这种情况就是为了解决后端埋点的软硬件环境属性问题，让前端在用户点击「立即支付」时，将相应的属性一并传回服务器，服务器发生「支付成功」时，带上相应的前端属性上报数据；当然这种方式理论上时数据准确度、完备性最高的，但同时这种方式的采集成本会比较高，意味着所有端的前后端接口需要做变更，建议是只在数据准确性、前端属性获取两个需求都非常强烈时采用。
+后端获取前端属性且触发上报：这种情况就是为了解决后端埋点的软硬件环境属性问题，让前端在用户点击“立即支付”时，将相应的属性一并传回服务器，服务器发生“支付成功”时，带上相应的前端属性上报数据；当然这种方式理论上时数据准确度、完备性最高的，但同时这种方式的采集成本会比较高，意味着所有端的前后端接口需要做变更，建议是只在数据准确性、前端属性获取两个需求都非常强烈时采用。
 
 
 # 8.1.4 属性设计
 
-埋点设计的最后一步是在每个事件下设计包含的属性，这里的属性到后续的数据分析中，就是维度和修饰词，对应到 SQL 查询语句中就是 where 和 group by。
+埋点设计的最后一步是在每个事件下设计包含的属性（用户属性、事件属性、对象属性、环境属性，等等），这里的属性在数据分析中，就是指的维度和修饰词。
 
 回到电商搜索的例子，要深入分析用户对不同商品的需求情况、不同关键词的健康度，需要对比分析不同关键词的数据表现；那么关于关键词的维度属性，例如关键词内容、关键词分类（推荐词、热门词）等属性就非常关键。
 
@@ -1731,23 +1394,71 @@ A页面与B页面具备唯一主次关系， B页面仅能从A页面跳转进入
 
 产品目标可以通过哪几个重要指标衡量？
 和指标最相关的用户的“关键行为”是什么？
-用户在做「关键行为」之前和之后，还有哪些行为值得关注和分析？
+用户在做“关键行为”之前和之后，还有哪些行为值得关注和分析？
 
 ![Image text](http://image.woshipm.com/wp-files/2017/03/AQl6wjeFwGRT3IT9onez.png)
 
 根据上面梳理的用户行为流程及事件，我们可以尝试着梳理一下埋点事件表，如下图所示：
 
-![Image text](http://image.woshipm.com/wp-files/2017/03/61b6Ivzc0auD0fHZEIXJ.png)
+| 行为事件   | 描述                    |
+|--------|------------------------|
+| 搜索商品   | 用户使用关键词搜索商品            |
+| 查看商品详情 | 在购买之前，查看某个商品，已获得更详细的信息 |
+| 加入购物车  | 用户将商品加入购物车             |
+| 生成订单   | 用户在购物车中开始生成订单以便结算      |
+| 开始支付   | 用户选择支付方式，开始付款          |
+| 成功支付   | 用户成功完成付款               |
+| 确认收货   | 用户在收到货物后，点击『确认收货』      |
 
 数据分析不能单纯的靠一些基本事件来进行，还涉及的事件属性会比较多，所以产品经理也可以在事件埋点表中补充关于事件属性这么一项。
 为事件增加属性，是一种更细致的、更精确的记录和刻画用户行为的方式。
 比如，某个用户打开了一个吹风机的商品详情页，可以详细描述如下： 事件：查看商品详情-商品类目：家用电器 -价格区间：100-399 -商品名称： 飞科吹风机 某某某型号…
 
-![Image text](http://image.woshipm.com/wp-files/2017/03/wo12nw9aK2kBgBwU6yp1.png)
-
-
+<table>
+    <tr>
+        <td>行为事件</td>
+        <td>事件属性</td>
+        <td>描述</td>
+    </tr>
+    <tr>
+        <td rowspan=2>搜索商品</td>
+        <td>关键词</td>
+        <td>用户使用关键词搜索商品</td>
+    </tr>
+    <tr>
+        <td>搜索结果条数</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td rowspan=3>查看商品详情</td>
+        <td>商品类目</td>
+        <td>在购买之前，查看某个商品，已获得更详细的信息</td>
+    </tr>
+    <tr>
+        <td>价格区间</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>商品名称</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td rowspan=3>加入购物车</td>
+        <td>商品类目</td>
+        <td>用户将商品加入购物车</td>
+    </tr>
+    <tr>
+        <td>价格区间</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>商品名称</td>
+        <td></td>
+    </tr>
+</table>
 
 根据产品流程设计指标
+
 在前面做了一系列的功课之后，我们就开始要根据产品的功能流程或者页面结构，定义好分析的目的，剥离关键流程，提炼关键指标。
 
 购物环节：宝贝详情页>加入购物车>订单确定>订单提交>支付>支付结果
