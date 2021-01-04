@@ -1,0 +1,182 @@
+<table>
+    <tr>
+        <td>CONSTANT_Class</td>
+        <td>7</td>
+        <td>类或接口</td>
+        <td>CONSTANT_Class_info</td>
+        <td><pre>
+CONSTANT_Class_info {
+    u1 tag;
+    u2 name_index;
+}
+</pre></td>
+    </tr>
+    <tr>
+        <td>CONSTANT_Fieldref</td>
+        <td>9</td>
+        <td>字段</td>
+        <td>CONSTANT_Fieldref_info</td>
+        <td><pre>
+CONSTANT_Fieldref_info {
+    u1 tag;
+    u2 class_index;
+    u2 name_and_type_index;
+}
+</pre></td>
+    </tr>
+    <tr>
+        <td>CONSTANT_Methodref</td>
+        <td>10</td>
+        <td>方法</td>
+        <td>CONSTANT_Methodref_info</td>
+        <td><pre>
+CONSTANT_Methodref_info {
+    u1 tag;
+    u2 class_index;
+    u2 name_and_type_index;
+}
+</pre></td>
+    </tr>
+    <tr>
+        <td>CONSTANT_InterfaceMethodref</td>
+        <td>11</td>
+        <td>接口方法</td>
+        <td>CONSTANT_InterfaceMethodref_info</td>
+        <td><pre>
+CONSTANT_InterfaceMethodref_info {
+    u1 tag;
+    u2 class_index;
+    u2 name_and_type_index;
+}
+</pre></td>
+    </tr>
+    <tr>
+        <td>CONSTANT_String</td>
+        <td>java.lang.String类型的常量对象</td>
+        <td>8</td>
+        <td>CONSTANT_String_info</td>
+        <td><pre>
+CONSTANT_String_info {
+    u1 tag;
+    u2 string_index;
+}
+</pre></td>
+    </tr>
+    <tr>
+        <td>CONSTANT_Intrger_info</td>
+        <td>4 字节float的数值常量</td>
+        <td>3</td>
+        <td>CONSTANT_Intrger_info</td>
+        <td><pre>
+CONSTANT_Integer_info {
+    u1 tag;
+    u4 bytes;
+}
+</pre></td>
+    </tr>
+    <tr>
+        <td>CONSTANT_Float_info</td>
+        <td>4 字节int的数值常量</td>
+        <td>4</td>
+        <td>CONSTANT_Float_info</td>
+        <td><pre>
+CONSTANT_Float_info {
+    u1 tag;
+    u4 bytes;
+}
+</pre></td>
+    </tr>
+
+    <tr>
+        <td>CONSTANT_Long_info </td>
+        <td>8 字节long的数值常量</td>
+        <td>5</td>
+        <td>CONSTANT_Long_info </td>
+        <td><pre>
+CONSTANT_Long_info {
+    u1 tag;
+    u4 high_bytes;
+    u4 low_bytes;
+}
+</pre></td>
+    </tr>
+    <tr>
+        <td>CONSTANT_Double_info</td>
+        <td>8 字节double的数值常量</td>
+        <td>6</td>
+        <td>CONSTANT_Double_info</td>
+        <td><pre>
+CONSTANT_Double_info {
+    u1 tag;
+    u4 high_bytes;
+    u4 low_bytes;
+}
+</pre></td>
+    </tr>
+    <tr>
+        <td>CONSTANT_NameAndType_info</td>
+        <td>字段或方法，但是和字段、方法、接口方法结构不同，CONSTANT_NameAndType_info 结构没有标识出它所属的类或接口</td>
+        <td>12</td>
+        <td>CONSTANT_NameAndType_info</td>
+        <td><pre>
+CONSTANT_NameAndType_info {
+    u1 tag;
+    u2 name_index;
+    u2 descriptor_index;
+}
+</pre></td>
+    </tr>
+    <tr>
+        <td>CONSTANT_Utf8_info</td>
+        <td>字符串常量的值</td>
+        <td>1</td>
+        <td>CONSTANT_Utf8_info</td>
+        <td><pre>
+CONSTANT_Utf8_info {
+    u1 tag;
+    u2 length;
+    u1 bytes[length];
+}
+</pre></td>
+    </tr>
+    <tr>
+        <td>CONSTANT_MethodHandle_info</td>
+        <td>方法句柄，reference_kind 项的值必须在1 至9 之间（包括1 和9），它决定了方法句柄的类型。reference_index 项的值必须是对常量池的有效索引。</td>
+        <td>15</td>
+        <td>CONSTANT_MethodHandle_info</td>
+        <td><pre>
+CONSTANT_MethodHandle_info {
+    u1 tag;
+    u1 reference_kind;
+    u2 reference_index;
+}
+</pre></td>
+    </tr>
+    <tr>
+        <td>CONSTANT_MethodType_info</td>
+        <td>方法类型</td>
+        <td>16</td>
+        <td>CONSTANT_MethodType_info</td>
+        <td><pre>
+CONSTANT_MethodType_info {
+    u1 tag;
+    u2 descriptor_index;
+}
+</pre></td>
+    </tr>
+    <tr>
+        <td>CONSTANT_InvokeDynamic_info</td>
+        <td>invokedynamic 指令所使用到的引导方法（Bootstrap Method）、
+            引导方法使用到动态调用名称（Dynamic Invocation Name）、
+            参数和请求返回类型、以及可以选择性的附加被称为静态参数（Static Arguments）的常量序列</td>
+        <td>18</td>
+        <td>CONSTANT_InvokeDynamic_info</td>
+        <td><pre>
+CONSTANT_InvokeDynamic_info {
+    u1 tag;
+    u2 bootstrap_method_attr_index;
+    u2 name_and_type_index;
+}
+</pre></td>
+    </tr>
+</table>
