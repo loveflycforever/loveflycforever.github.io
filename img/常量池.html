@@ -2,7 +2,7 @@
     <tr>
         <td>CONSTANT_Class</td>
         <td>7</td>
-        <td>类或接口</td>
+        <td>类或接口的符号引用</td>
         <td>CONSTANT_Class_info</td>
         <td><pre>
 CONSTANT_Class_info {
@@ -14,7 +14,7 @@ CONSTANT_Class_info {
     <tr>
         <td>CONSTANT_Fieldref</td>
         <td>9</td>
-        <td>字段</td>
+        <td>类或接口中字段的引用</td>
         <td>CONSTANT_Fieldref_info</td>
         <td><pre>
 CONSTANT_Fieldref_info {
@@ -27,7 +27,7 @@ CONSTANT_Fieldref_info {
     <tr>
         <td>CONSTANT_Methodref</td>
         <td>10</td>
-        <td>方法</td>
+        <td>类中方法的引用</td>
         <td>CONSTANT_Methodref_info</td>
         <td><pre>
 CONSTANT_Methodref_info {
@@ -40,7 +40,7 @@ CONSTANT_Methodref_info {
     <tr>
         <td>CONSTANT_InterfaceMethodref</td>
         <td>11</td>
-        <td>接口方法</td>
+        <td>接口中的方法的引用</td>
         <td>CONSTANT_InterfaceMethodref_info</td>
         <td><pre>
 CONSTANT_InterfaceMethodref_info {
@@ -49,6 +49,64 @@ CONSTANT_InterfaceMethodref_info {
     u2 name_and_type_index;
 }
 </pre></td>
+    </tr>
+    <tr>
+        <td>CONSTANT_NameAndType_info</td>
+        <td>字段或方法的名称和描述符</td>
+        <td>12</td>
+        <td>CONSTANT_NameAndType_info</td>
+        <td><pre>
+CONSTANT_NameAndType_info {
+    u1 tag;
+    u2 name_index;
+    u2 descriptor_index;
+}
+</pre></td>
+        <td>和字段、方法、接口方法结构不同，CONSTANT_NameAndType_info 结构没有标识出它所属的类或接口</td>
+    </tr>
+
+    <tr>
+        <td>CONSTANT_MethodHandle_info</td>
+        <td>方法句柄的引用</td>
+        <td>15</td>
+        <td>CONSTANT_MethodHandle_info</td>
+        <td><pre>
+CONSTANT_MethodHandle_info {
+    u1 tag;
+    u1 reference_kind;
+    u2 reference_index;
+}
+</pre></td>
+        <td>reference_kind 项的值必须在1 至9 之间（包括1 和9），它决定了方法句柄的类型。reference_index 项的值必须是对常量池的有效索引。</td>
+    </tr>
+    <tr>
+        <td>CONSTANT_MethodType_info</td>
+        <td>方法类型的引用</td>
+        <td>16</td>
+        <td>CONSTANT_MethodType_info</td>
+        <td><pre>
+CONSTANT_MethodType_info {
+    u1 tag;
+    u2 descriptor_index;
+}
+</pre></td>
+    </tr>
+    <tr>
+        <td>CONSTANT_InvokeDynamic_info</td>
+        <td>动态计算的call site的引用</td>
+        <td>18</td>
+        <td>CONSTANT_InvokeDynamic_info</td>
+        <td><pre>
+CONSTANT_InvokeDynamic_info {
+    u1 tag;
+    u2 bootstrap_method_attr_index;
+    u2 name_and_type_index;
+}
+</pre></td>
+        <td>invokedynamic 指令所使用到的引导方法（Bootstrap Method）、
+            引导方法使用到动态调用名称（Dynamic Invocation Name）、
+            参数和请求返回类型、
+            以及可以选择性的附加被称为静态参数（Static Arguments）的常量序列</td>
     </tr>
     <tr>
         <td>CONSTANT_String</td>
@@ -61,6 +119,22 @@ CONSTANT_String_info {
     u2 string_index;
 }
 </pre></td>
+        <td>tag就是结构体的标记，string_index是string在class常量池的index。
+            string_index对应的class常量池的内容是一个CONSTANT_Utf8_info结构体。</td>
+    </tr>
+    <tr>
+        <td>CONSTANT_Utf8_info</td>
+        <td>字符串常量的值</td>
+        <td>1</td>
+        <td>CONSTANT_Utf8_info</td>
+        <td><pre>
+CONSTANT_Utf8_info {
+    u1 tag;
+    u2 length;
+    u1 bytes[length];
+}
+</pre></td>
+        <td>要创建的String对象的变种UTF-8编码。就是将unicode进行编码的方式。</td>
     </tr>
     <tr>
         <td>CONSTANT_Intrger_info</td>
@@ -114,69 +188,18 @@ CONSTANT_Double_info {
 </pre></td>
     </tr>
     <tr>
-        <td>CONSTANT_NameAndType_info</td>
-        <td>字段或方法，但是和字段、方法、接口方法结构不同，CONSTANT_NameAndType_info 结构没有标识出它所属的类或接口</td>
-        <td>12</td>
-        <td>CONSTANT_NameAndType_info</td>
-        <td><pre>
-CONSTANT_NameAndType_info {
-    u1 tag;
-    u2 name_index;
-    u2 descriptor_index;
-}
-</pre></td>
+    <td colspan="6">
+        知道unicode的范围是从0x0000 至 0x10FFFF。
+        不同的unicode范围使用的是不同的编码方式。
+        注意，如果一个字符占用多个字节，那么在class文件中使用的是 big-endian 大端优先的排列方式。
+        如果字符范围在FFFF之后，那么使用的是2个3字节的格式的组合。
+    </td>
     </tr>
     <tr>
-        <td>CONSTANT_Utf8_info</td>
-        <td>字符串常量的值</td>
-        <td>1</td>
-        <td>CONSTANT_Utf8_info</td>
-        <td><pre>
-CONSTANT_Utf8_info {
-    u1 tag;
-    u2 length;
-    u1 bytes[length];
-}
-</pre></td>
-    </tr>
-    <tr>
-        <td>CONSTANT_MethodHandle_info</td>
-        <td>方法句柄，reference_kind 项的值必须在1 至9 之间（包括1 和9），它决定了方法句柄的类型。reference_index 项的值必须是对常量池的有效索引。</td>
-        <td>15</td>
-        <td>CONSTANT_MethodHandle_info</td>
-        <td><pre>
-CONSTANT_MethodHandle_info {
-    u1 tag;
-    u1 reference_kind;
-    u2 reference_index;
-}
-</pre></td>
-    </tr>
-    <tr>
-        <td>CONSTANT_MethodType_info</td>
-        <td>方法类型</td>
-        <td>16</td>
-        <td>CONSTANT_MethodType_info</td>
-        <td><pre>
-CONSTANT_MethodType_info {
-    u1 tag;
-    u2 descriptor_index;
-}
-</pre></td>
-    </tr>
-    <tr>
-        <td>CONSTANT_InvokeDynamic_info</td>
-        <td>invokedynamic 指令所使用到的引导方法（Bootstrap Method）、
-            引导方法使用到动态调用名称（Dynamic Invocation Name）、
-            参数和请求返回类型、以及可以选择性的附加被称为静态参数（Static Arguments）的常量序列</td>
-        <td>18</td>
-        <td>CONSTANT_InvokeDynamic_info</td>
-        <td><pre>
-CONSTANT_InvokeDynamic_info {
-    u1 tag;
-    u2 bootstrap_method_attr_index;
-    u2 name_and_type_index;
-}
-</pre></td>
+    <td colspan="6">
+        从CONSTANT_String_info创建运行时String常量的规则：
+        规则一：如果String.intern之前被调用过，并且返回的结果和CONSTANT_String_info中保存的编码是一致的话，表示他们指向的是同一个String的实例。
+        规则二：如果不同的话，那么会创建一个新的String实例，并将运行时String常量指向该String的实例。最后会在这个String实例上调用String的intern方法。调用intern方法主要是将这个String实例加入字符串常量池。
+    </td>
     </tr>
 </table>
