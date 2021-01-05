@@ -15,7 +15,7 @@ Caffe，CNTK，DeepLearning4j，Keras，MXNet和TensorFlow是深度学习框架�
 
 
 
-
+osgi、Jigsaw
 
 设计一个高可用系统
 

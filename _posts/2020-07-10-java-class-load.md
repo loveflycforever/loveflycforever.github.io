@@ -15,7 +15,7 @@ comments: true
 
 Class文件格式采用一种类似于C语言结构体的伪结构来存储数据，包含**两种数据类型**。
 
-```txt
+```text
 ClassFile {
     u4 magic; 
     u2 minor_version; 
@@ -115,19 +115,13 @@ public class TestClass {
 constant_pool存放常量信息的结构体就是cp_info
 cp_info
 
-```txt
+```text
 cp_info { 
     u1 tag; 
     u1 info[]; 
 }
 ```
 tag表示常量的类型，info[]代表tag类型所属的表项。
-
-
-
-
-
-
 
 
 # 一、类加载的五个过程
@@ -153,16 +147,28 @@ D --> E[卸载]
 
 类的加载方式分为`隐式加载`和`显式加载`两种。
 1. 通过**类的全限定名**来获取定义此类的**二进制字节流**。
+
 2. 将这个字节流所代表的**静态存储结构**转化为**方法区**的**运行时数据结构**。
+
 3. 在内存中生成一个代表这个类的**`java.lang.Class`对象**，作为方法区这个类的各种数据的**访问入口**。
+
+JDK8之前会加载到内存中的方法区。 从JDK8到现在为止，会加载到元数据区。
 
 ### 1.1.1 隐式加载
 
 指的是程序在使用`new`关键词创建对象时，会隐式的调用类的加载器把对应的类加载到 JVM 中。
 
+遇到访问类的静态变量、静态方法，getstatic、putstatic
+
+对类进行反射调用时，invokestatic
+
 ### 1.1.2 显式加载
 
 指的是通过直接调用`Class.forName(...)`方法来把所需的类加载到 JVM 中。
+
+通过ClassLoader的findClass方法
+
+通过ClassLoader的loadClass方法
 
 ## 1.2 连接，Linking
 
@@ -334,7 +340,7 @@ JVM 会根据需要来判断，是在类被加载器加载时就对常量池中�
 - 当使用JDK1.7的动态语言支持时，若一个`java.lang.invoke.MethodHandle`实例最后的解析结果为`REF_getStatic`、`REF_putStatic`、`REF_invokeStatic`的方法句柄，且这个方法句柄所对应的类未进行初始化，需先触发其初始化。
 
 1. 编译器收集的顺序是由语句在源文件中**出现的顺序**决定的，静态语句块中只能访问到定义在静态语句块之前的变量，而定义在它之后的变量，在前面的静态语句块可以赋值，但不能访问，代码解释如下：
-```
+```java
 public class Test {
     static {
         i = 0;                       //给变量赋值可以正常编译通过
@@ -345,20 +351,22 @@ public class Test {
 }
 ```
 2. 初始化方法执行的顺序，虚拟机会保证在子类的初始化方法执行之前，父类的初始化方法已经执行完毕，因此在虚拟机中第一个被执行的类初始化方法一定是`java.lang.Object`。另外，也意味着父类中定义的静态语句块要优先于子类的变量赋值操作，例如：
-```
-static class Parent {
-    public static int A = 1;
-    static {
-        A = 2;
+```java
+public class Test {
+    static class Parent {
+        public static int A = 1;
+        static {
+            A = 2;
+        }
     }
-}
 
-static class Sub extends Parent {
-    public static int B = A;
-}
+    static class Sub extends Parent {
+        public static int B = A;
+    }
 
-public static void main(String[] args) {
-    System.out.println(Sub.B);
+    public static void main(String[] args) {
+        System.out.println(Sub.B);
+    }
 }
 ```
 执行的结果。字段B的值将会是2而不是1。
@@ -373,13 +381,13 @@ public static void main(String[] args) {
 
 ## 1.5 卸载，Unloading
 
-> 加载 - 验证 - 准备 - 初始化 - 卸载 这五个阶段的顺序是确定的，而 解析 可能为了支持Java的动态绑定会在 初始化 后才开始。
+## 1.6 小结
+
+【加载】、【验证】、【准备】、【初始化】和【卸载】这5个阶段的顺序是确定的，而【解析】可能为了支持Java的动态绑定会在 初始化 后才开始。
 
 # 二、类加载器
 
-Bootstrap ClassLoader、Extension ClassLoader、Application ClassLoader。
-
-每个类加载器，都拥有一个独立的命名空间，它不仅用于加载类，还和这个类本身一起作为在JVM中的唯一标识。所以比较两个类是否相等，只要看它们是否由同一个类加载器加载，即使它们来源于同一个Class文件且被同一个JVM加载，只要加载它们的类加载器不同，这两个类就必定不相等
+确认每个类应该由哪个类加载器加载。每个类加载器，都拥有一个独立的命名空间，它不仅用于将class文件加载到JVM中，还和这个类本身一起作为在JVM中的唯一标识。所以比较两个类是否相等，只要看它们是否由同一个类加载器加载，即使它们来源于同一个class文件且被同一个JVM加载，只要加载它们的类加载器不同，这两个类就必定不相等。影响的判断方法有`equals()`、`isAssignableFrom()`、`isInstance()`以及`instanceof关键字`。
 
 ## 2.1 启动类加载器 Bootstrap ClassLoader
 
@@ -387,19 +395,23 @@ Bootstrap ClassLoader、Extension ClassLoader、Application ClassLoader。
 
 ## 2.2 扩展类加载器 Extension ClassLoader
 
-加载`<JAVA_HOME>\lib\ext`目录下扩展包、或者被`java.ext.dirs`系统变量所指定的路径中的所有类库。
+JVM的一部分，由sun.misc.Launcher$ExtClassLoader实现。加载`<JAVA_HOME>\lib\ext`目录下扩展包、或者被`java.ext.dirs`系统变量所指定的路径（System.getProperty("java.ext.dirs")）中的所有类库。
 
 ## 2.3 应用程序类加载器 Application ClassLoader
 
-加载用户路径(classpath)上指定的类库。
+由sun.misc.Launcher$AppClassLoader实现。由`java.class.path`系统变量所指定的路径（System.getProperty("java.class.path")）指定目录下的文件和当前工程类路径下，也就是通常说的用户路径（classpath）上指定的类库。
 
-## 2.4 工作流程
+## 2.4 用户自定义类加载器 User Custom ClassLoader
+
+(java.lang.ClassLoader的子类)，在程序运行期间, 通过java.lang.ClassLoader的子类动态加载class文件, 体现java动态实时类装入特性.
+
+## 2.5 工作流程
 
 当Application ClassLoader 收到一个类加载请求时，它首先不会自己去尝试加载这个类，而是将这个请求委派给父类加载器Extension ClassLoader去完成。
 
 当Extension ClassLoader收到一个类加载请求时，他首先也不会自己去尝试加载这个类，而是将请求委派给父类加载器Bootstrap ClassLoader去完成。
 
-如果Bootstrap ClassLoader加载失败(在<JAVA_HOME>\lib中未找到所需类)，就会让Extension ClassLoader尝试加载。
+如果Bootstrap ClassLoader加载失败（在`<JAVA_HOME>\lib`中未找到所需类），就会让Extension ClassLoader尝试加载。
 
 如果Extension ClassLoader也加载失败，就会使用Application ClassLoader加载。
 
@@ -408,6 +420,25 @@ Bootstrap ClassLoader、Extension ClassLoader、Application ClassLoader。
 如果均加载失败，就会抛出ClassNotFoundException异常。 
 
 # 三、双亲委派模型
+
+**双亲委派模型的原理是**：当一个类加载器接收到类加载请求时，首先会请求其父类加载器加载，每一层都是如此，当父类加载器无法找到这个类时（根据类的全限定名称），子类加载器才会尝试自己去加载。
+
+自定义类加载器的父加载器是AppClassLoader，AppClassLoader的父加载器是ExtClassLoader，ExtClassLoader是没有父类加载器的，在代码中，ExtClassLoader的父类加载器为null。BootstrapClassLoader也并没有子类，因为他完全由JVM实现。
+
+```java
+public abstract class ClassLoader {
+...
+    // The parent class loader for delegation
+    // Note: VM hardcoded the offset of this field, thus all new fields
+    // must be added *after* it.
+    private final ClassLoader parent;
+...
+}
+```
+
+在类加载器中，用parent字段来表示当前加载器的父类加载器。
+
+用户自定义类加载器的父加载器是AppClassLoader，AppClassLoader的父加载器是ExtClassLoader，ExtClassLoader是没有父类加载器的，在代码中，ExtClassLoader的父类加载器为null。BootstrapClassLoader也并没有子类，因为他完全由JVM实现。
 
 ## 3.1 实现过程
 
@@ -423,6 +454,13 @@ Bootstrap ClassLoader、Extension ClassLoader、Application ClassLoader。
 
 5. 如果父类加载器和启动类加载器均无法加载请求，则调用自身的加载功能。
 
+## 3.2 实现过程
+双亲委派模型是JDK1.2之后引入的。根据双亲委派模型原理，可以试想，没有双亲委派模型时，如果用户自己写了一个全限定名为java.lang.Object的类，并用自己的类加载器去加载，同时BootstrapClassLoader加载了rt.jar包中的JDK本身的java.lang.Object，这样内存中就存在两份Object类了，此时就会出现很多问题，例如根据全限定名无法定位到具体的类。
+
+有了双亲委派模型后，所有的类加载操作都会优先委派给父类加载器，这样一来，即使用户自定义了一个java.lang.Object，但由于BootstrapClassLoader已经检测到自己加载了这个类，用户自定义的类加载器就不会再重复加载了。
+
+每个ClassLoader都维护了一份自己的名称空间，同一个名称空间里不能出现两个同名的类。所以，双亲委派模型能够保证类在内存中的唯一性。实现了java安全沙箱模型顶层的类加载器安全机制
+
 ## 3.2 优点
 
 Java类伴随其类加载器具备了带有优先级的层次关系，确保了在各种加载环境的加载顺序。  
@@ -430,3 +468,75 @@ Java类伴随其类加载器具备了带有优先级的层次关系，确保了�
 保证了运行的安全性，防止不可信类扮演可信任的类。
 
 虽然数组类不通过类加载器创建而是由JVM直接创建的，但仍与类加载器有密切关系，因为数组类的元素类型最终还要靠类加载器去创建
+
+## 3.3 常见问题
+
+在Java中，一个类用其完全匹配类名(fully qualified class name)作为标识，这里指的完全匹配类名包括包名和类名。但在JVM中一个类用其全名和一个加载类ClassLoader的实例作为唯一标识，不同类加载器加载的类将被置于不同的命名空间.
+
+Class.forName(String name)默认会使用调用类的类加载器来进行类加载。即在一般情况下,保证同一个类中所关联的其他类都是由当前类的类加载器所加载的.证明了java类加载器中的名称空间是唯一的,不会相互干扰.
+
+在不指定父类加载器的情况下，默认采用应用程序类加载器。即时用户自定义类加载器不指定父类加载器，那么，同样可以加载到<Java_Runtime_Home>/lib下的类，但此时就不能够加载<Java_Runtime_Home>/lib/ext目录下的类了。
+
+一般尽量不要覆写已有的loadClass（…）方法中的委派逻辑，在JVM规范和JDK文档中（1.2或者以后版本中），都没有建议用户覆写loadClass(…)方法，相比而言，明确提示开发者在开发自定义的类加载器时覆写findClass(…)逻辑。
+
+java默认的线程上下文类加载器是系统类加载器(AppClassLoader).使用线程上下文类加载器,可以在执行线程中,抛弃双亲委派加载链模式,使用线程上下文里的类加载器加载类.从根本解决了一般应用在多线程开发不能违背双亲委派模式的问题.使java类加载体系显得更灵活.要注意,保证多根需要通信的线程间的类加载器应该是同一个,防止因为不同的类加载器,导致类型转换异常(ClassCastException).
+
+**hotswap**特性
+
+老的对象状态需要通过其他方式拷贝到重载过的类生成的全新实例中来。(A类中的b实例)
+
+而新实例所依赖的B类如果与老对象不是同一个类加载器加载的，将会抛出类型转换异常(ClassCastException).
+
+为了解决这种问题，HotSwapClassLoader自定义了load方法.即当前类是由自身classLoader加载的，而内部依赖的类还是老对象的classLoader加载的.
+
+```
+public class HotSwapClassLoader extends URLClassLoader {    
+       
+      public HotSwapClassLoader(URL[] urls) {    
+          super (urls);    
+      }    
+       
+      public HotSwapClassLoader(URL[] urls, ClassLoader parent) {    
+          super (urls, parent);    
+      }    
+       
+      public Class load(String name)    
+            throws ClassNotFoundException {    
+          return load(name, false );    
+      }    
+       
+      public Class load(String name, boolean resolve)    
+            throws ClassNotFoundException {    
+          if ( null != super .findLoadedClass(name))    
+              return reload(name, resolve);    
+       
+          Class clazz = super .findClass(name);    
+       
+          if (resolve)    
+              super .resolveClass(clazz);    
+       
+          return clazz;    
+      }    
+       
+      public Class reload(String name, boolean resolve)    
+            throws ClassNotFoundException {    
+          return new HotSwapClassLoader( super .getURLs(), super .getParent()).load(    
+              name, resolve);    
+      }    
+  }    
+```
+
+不同的类加载器实例都有自己的内存空间，即使类的全限定名相同，但类加载器不同也是不行的。所以，内存中两个类equals为true的条件是用同一个类加载器实例加载的全限定名相同的两个类实例。其他的还会影响instanceof 、Class的isAssignableFrom()方法和isInstance()方法
+
+不要尝试自定义java.*包，并尝试用加载器去加载他们，会直接抛出一个异常，这个异常是在调用defineClass的校验过程抛出的，源码如下
+
+```text
+// Note:  Checking logic in java.lang.invoke.MemberName.checkForTypeAlias
+// relies on the fact that spoofing is impossible if a class has a name
+// of the form "java.*"
+if ((name != null) && name.startsWith("java.")) {
+    throw new SecurityException
+        ("Prohibited package name: " +
+         name.substring(0, name.lastIndexOf('.')));
+}
+```
