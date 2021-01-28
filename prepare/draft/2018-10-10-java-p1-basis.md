@@ -55,7 +55,7 @@ equals用来比较的是两个对象的内容是否相等，由于所有的类�
 
 5. 自动装箱，常量池
 运算`==、+、-、*、/`时，会将封装类进行拆箱，对基础数据类型进行运算，
-装箱操作会创建对象，频繁的装箱操作会消耗许多内存，影响性能，所以可以避免装箱的时候应该尽量避免。
+装箱操作会创建对象，频繁地装箱操作会消耗许多内存，影响性能，所以可以避免装箱的时候应该尽量避免。
 
 方法区里存放着类的版本，字段，方法，接口和常量池等。
 方法区里的class文件信息包括：
@@ -80,7 +80,7 @@ class文件 16进制 一个16进制数位4bit，0000-1111（2^4）
 
 u1、u2、u4 类型，分别表示1个字节，2个字节和4个字节。
 
-常量池里存储着用于存放编译期生成的字面量和符号引用。这部分内容将在类加载后进入方法区的运行时常量池中存放（String.intern()）。
+常量池里存储着用于存放编译期生成的字面量和符号引用。这些内容将在类加载后进入方法区的运行时常量池中存放（String.intern()）。
 字面量包括文本字符串、被声明为final的常量值、基本数据类型的值、其他。
 符号引用包括类和结构的完全限定名、字段名称和描述符、方法名称和描述符。
 在JDK6.0及之前版本，字符串常量池是放在Perm Gen区(也就是方法区)中；
@@ -90,7 +90,7 @@ u1、u2、u4 类型，分别表示1个字节，2个字节和4个字节。
 
 常量池中为0的位置（#0）永远不使用，还有Long和Double类型一个常量占2个连续索引（没错，又是历史原因），实际只是用了第1个索引，第2个索引永远空着（参见#18、#19）”。
 
-javap分析class文件用法：javap -verbose class文件名
+javap分析class文件用法：`javap -verbose YOUR_CLASS_NAME`
 
 6. `Object`有哪些公用方法
 `Object`是所有类的父类，任何类都默认继承`Object`。
@@ -99,10 +99,95 @@ javap分析class文件用法：javap -verbose class文件名
 保护方法，实现对象的浅复制，只有实现了`Cloneable`接口才可以调用该方法，否则抛出`CloneNotSupportedException`异常
 
 `equals()`
-在`Object`中`equals()`与`==`是一样的，子类一般需要重写该方法
+在`Object`中`equals()`与`==`一致，子类一般需要重写该方法
 
 `hashCode()`
 该方法用于哈希查找，重写了`equals()`方法一般都要重写`hashCode()`方法。这个方法在一些具有哈希功能的`Collection`中用到
+
+Spring源码的过程中看到这么一行@{link org.springframework.context.support.AbstractApplicationContext}在初始化Context时设置 id 和 displayName名字的时候 ObjectUtils.identityToString(this)可以看到Spring的做法是：类名 + @ + 16进制的字符串
+为给定对象返回与默认方法hashCode（）返回的哈希代码相同的哈希代码，无论给定对象的类是否重写hashCode（）。空引用的哈希代码为零。
+
+```text
+    /**
+     * Returns the same hash code for the given object as
+     * would be returned by the default method hashCode(),
+     * whether or not the given object's class overrides
+     * hashCode().
+     * The hash code for the null reference is zero.
+     *
+     * @param x object for which the hashCode is to be calculated
+     * @return  the hashCode
+     * @since   JDK1.1
+     */
+    public static native int identityHashCode(Object x);
+```
+object.hashcode()和identityHashCode一致，本地c语言的实现，调用的是JVM_IHashCode()方法，它又调用ObjectSynchronizer::FastHashCode()方法
+其中的get_next_hash方法，对hash值真正进行了计算
+```c
+// Marsaglia’s xor-shift scheme with thread-specific state
+
+// This is probably the best overall implementation – we’ll
+
+// likely make this the default in future releases.
+
+unsigned t = Self->_hashStateX ;
+
+t ^= (t << 11) ;
+
+Self->_hashStateX = Self->_hashStateY ;
+
+Self->_hashStateY = Self->_hashStateZ ;
+
+Self->_hashStateZ = Self->_hashStateW ;
+
+unsigned v = Self->_hashStateW ;
+
+v = (v ^ (v >> 19)) ^ (t ^ (t >> 8)) ;
+
+Self->_hashStateW = v ;
+
+value = v ;
+```
+而
+```c
+// thread-specific hashCode stream generator state - Marsaglia shift-xor form
+
+_hashStateX = os::random() ;
+
+_hashStateY = 842502087 ;
+
+_hashStateZ = 0x8767 ;    // (int)(3579807591LL & 0xffff) ;
+
+_hashStateW = 273326509 ;
+```
+所以，JDK8 的默认hashCode的计算方法是通过和当前线程有关的一个随机数+三个确定值，运用Marsaglia’s xorshift scheme随机数算法得到的一个随机数。
+xorshift是由George Marsaglia发现的一类伪随机数生成器，其通过移位和与或计算，能够在计算机上以极快的速度生成伪随机数序列。其算法的基本实现如下：
+```
+unsigned long xor128(){
+
+static unsigned long x=123456789,y=362436069,z=521288629,w=88675123;
+
+unsigned long t;
+
+t=(xˆ(x<<11));x=y;y=z;z=w; return( w=(wˆ(w>>19))ˆ(tˆ(t>>8)) );
+```
+可以通过在JVM启动参数中添加-XX:hashCode=4，改变默认的hashCode计算方式。openJdk8默认值为5
+
+hashCode == 0
+此类方案返回一个Park-Miller伪随机数生成器生成的随机数
+OpenJdk 6 &7的默认实现。
+
+hashCode == 1
+此类方案将对象的内存地址，做移位运算后与一个随机数进行异或得到结果
+
+hashCode == 2
+此类方案返回固定的1
+
+hashCode == 3
+此类方案返回一个自增序列的当前值
+
+hashCode == 4
+此类方案返回当前对象的内存地址
 
 `getClass()`
 final方法，获得运行时类型
@@ -130,7 +215,7 @@ final方法，获得运行时类型
 
 7. Java的四种引用，强-弱-软-虚，用到的场景
 强引用（StrongReference）
-A a = new A()
+`A a = new A()`
 有引用变量指向时永远不会被垃圾回收。
 软引用（SoftReference）
 SoftReference<T> ref = new SoftReference<T>(new T());
@@ -151,6 +236,9 @@ ReferenceQueue<T> queue = new ReferenceQueue<T>();
 PhantomReference<T> ref = new PhantomReference<T>(new T(), queue);  
 在使用软引用和弱引用的时候，我们可以显示地通过System.gc()来通知JVM进行垃圾回收，但是要注意的是，虽然发出了通知，JVM不一定会立刻执行，也就是说这句是无法确保此时JVM一定会进行垃圾回收的。
 
+
+caffine实现原理w-tinyLFU，4bit的布隆过滤器，分为windowcache（LRU）和候选者（80%）/受害者（20%）共存的主缓存，候选者小于受害者并且小于5次，删除，否者随机删除
+
 8. Hashcode的作用
 9. HashMap的hashcode的作用
 10. 为什么重载hashCode方法？
@@ -160,13 +248,25 @@ PhantomReference<T> ref = new PhantomReference<T>(new T(), queue);
 所以在重写`equals()`方法的同时，必须重写`hashCode()`方法。
 
 11. ArrayList、LinkedList、Vector的区别
-用Iterator实现单向遍历，也可用ListIterator实现双向遍历
+
+使用迭代器，不需要干涉遍历的过程，只需要每次取出一个你想要的数据就可以了。
+List和Set都有iterator()取得迭代器，但是使用list时，可以用listIterator()来取得迭代器
+
+1.listIterator()有add()方法，可以向List中添加对象，而Iterator()不能。
+
+2.listIterator()和Iterator()都有hasNext()和next()方法，可以实现顺序向后遍历，但是listIterator()有hasPrevious()和previous()方法，可以实现逆序遍历。
+
+3.listIterator()可以定位当前索引位置，nextIndex()和previousIndex()可以实现，而iterator()没有此功能。
+
+4.都可以实现删除对象，但是listIterator()可以实现对象的修改，set()方法可以实现。Iterator没有此功能。
+
 ArrayList和Vector是采用数组方式存储数据，此数组元素数大于实际存储的数据以便增加插入元素，都允许直接序号索引元素，但是插入数据要涉及到数组元素移动等内存操作，所以插入数据慢，查找有下标，所以查询数据快，
 Vector由于使用了synchronized方法-线程安全，所以性能上比ArrayList要差，
-LinkedList使用双向链表实现存储，按序号索引数据需要进行向前或向后遍历，但是插入数据时只需要记录本项前后项即可，插入数据较快。
+LinkedList（有头项和尾项）使用双向链表实现存储，按序号索引数据需要进行向前或向后遍历，但是插入数据时只需要记录本项前后项即可，插入数据较快。
 
 12. String、StringBuffer与StringBuilder的区别
 运行速度快慢为：StringBuilder > StringBuffer > String
+本质区别为字符数组char[]没有被final修饰，并且会自动增长为2*old+2的大小
 String为字符串常量，而StringBuilder和StringBuffer均为字符串变量，即String对象一旦创建之后该对象是不可更改的，但后两者的对象是变量，是可以更改的。
 String：适用于少量的字符串操作的情况
 StringBuilder与StringBuffer有公共父类AbstractStringBuilder
@@ -192,8 +292,26 @@ Map
  │  └ WeakHashMap
  ├ TreeMap
  └ IdentifyHashMap
+ 
+ 
+WeakHashMap 维护了一个
+```
+    /**
+     * Reference queue for cleared WeakEntries
+     */
+    private final ReferenceQueue<Object> queue = new ReferenceQueue<>();
+```
 
 14. HashMap和HashTable的区别
+
+1. 当HashMap中元素总个数达到阈值时就会扩容。注意是元素总个数，而不是数组占用个数。
+
+2. 当向HashMap中添加元素时，如果首节点是链表，将键值对添加到链表。
+添加之后会判断链表长度是否到达TREEIFY_THRESHOLD - 1这个阈值，“尝试”将链表转换成红黑树。
+在treeifyBin()方法中，如果当前数组容量太小（小于64），放弃转换，扩充数组。
+
+HashMap在jdk1.8之后引入了红黑树的概念，表示若桶中链表元素超过8时，会自动转化成红黑树；若桶中元素小于等于6时，树结构还原成链表形式。
+
 15. JDK7与JDK8中HashMap的实现
 JDK7
 JDK7中HashMap采用的是 位桶 + 链表 的方式
@@ -214,28 +332,61 @@ ConcurrentHashMap是线程安全的。
 ConcurrentHashMap采用锁分段技术，将整个Hash桶进行了分段segment，也就是将这个大的数组分成了几个小的片段segment，而且每个小的片段segment上面都有锁存在，那么在插入元素的时候就需要先找到应该插入到哪一个片段segment，然后再在这个片段上面进行插入，而且这里还需要获取segment锁。
 ConcurrentHashMap让锁的粒度更精细一些，并发性能更好。
 
+代码层杜绝了key=null值的存在（抛出空指针），实际是为了杜绝null值在应用时的二义性。
+
 17. ConcurrentHashMap能完全替代HashTable吗
 HashTable是一个线程安全的类，它使用synchronized来锁住整张Hash表来实现线程安全，即每次锁住整张表让线程独占。
 ConcurrentHashMap允许多个修改操作并发进行，其关键在于使用了锁分离技术。它使用了多个锁来控制对hash表的不同部分进行的修改。ConcurrentHashMap内部使用段(Segment)来表示这些不同的部分，每个段其实就是一个小的HashTable，它们有自己的锁。只要多个修改操作发生在不同的段上，它们就可以并发进行。
-HashTable虽然性能上不如ConcurrentHashMap，但并不能完全被取代，两者的迭代器的一致性不同的，HashTable的迭代器是强一致性的，而ConcurrentHashMap是弱一致的。 ConcurrentHashMap的get，clear，iterator 都是弱一致性的。 
+HashTable虽然性能上不如ConcurrentHashMap，但并不能完全被取代，
+两者的迭代器的一致性不同的，HashTable的迭代器是强一致性的，而ConcurrentHashMap是弱一致的。 ConcurrentHashMap的get，clear，iterator 都是弱一致性的。 
 
 
 > 并发队列中迭代器弱一致性原理
-> 并发队列里面的Iterators是弱一致性的，next返回的是队列某一个时间点或者创建迭代器时候的状态的反映。当创建迭代器后，其他线程删除了该元素时候并不会抛出java.util.ConcurrentModificationException异常，能够保持创建迭代器后的元素一定被正确的next出来。
+> 并发队列里面的Iterators是弱一致性的，next返回的是队列某一个时间点或者创建迭代器时候的状态的反映。
+> 当创建迭代器后，其他线程删除了该元素时候并不会抛出java.util.ConcurrentModificationException异常，能够保持创建迭代器后的元素一定被正确的next出来。
 
 
 Segment下面包含很多个HashEntry列表数组。对于一个key，需要经过三次hash操作，才能最终定位这个元素的位置，这三次hash分别为：
 - 对于一个key，先进行一次hash操作，得到hash值h1，也即h1 = hash1(key)；
 - 将得到的h1的高几位进行第二次hash，得到hash值h2，也即h2 = hash2(h1高几位)，通过h2能够确定该元素的放在哪个Segment；
 - 将得到的h1进行第三次hash，得到hash值h3，也即h3 = hash3(h1)，通过h3能够确定该元素放置在哪个HashEntry。
+
+1.7
 不lock所有的Segment，遍历所有Segment，累加各个Segment的大小得到整个Map的大小，
 如果某相邻的两次计算获取的所有Segment的更新的次数（每个Segment都有一个modCount变量，这个变量在Segment中的Entry被修改时会加一，通过这个值可以得到每个Segment的更新操作的次数）是一样的，说明计算过程中没有更新操作，则直接返回这个值。
 如果这三次不加锁的计算过程中Map的更新次数有变化，则之后的计算先对所有的Segment加锁，再遍历所有Segment计算Map大小，最后再解锁所有Segment。
-ConcurrentHashMap中的key和value值都不能为null，HashMap中key可以为null，HashTable中key不能为null。
+为什么是3次
+```
+RETRIES_BEFORE_LOCK 默认 == 2;
+int retries = -1; // first iteration isn't retry
+  try {
+    for (;;) {
+      if (retries++ == RETRIES_BEFORE_LOCK) {
+            ......
+```
+
+**ConcurrentHashMap中的key和value值都不能为null**，HashMap中key可以为null，HashTable中key不能为null。
 ConcurrentHashMap是线程安全的类并不能保证使用了ConcurrentHashMap的操作都是线程安全的！
 ConcurrentHashMap的get操作不需要加锁，put操作需要加锁
 因为get操作几乎所有时候都是一个无锁操作（get中有一个readValueUnderLock调用，不过这句执行到的几率极小），使得同一个Segment实例上的put和get可以同时进行，这就是get操作是弱一致的根本原因。
 ConcurrentHashMap的弱一致性主要是为了提升效率，是一致性与效率之间的一种权衡。要成为强一致性，就得到处使用锁，甚至是全局锁，这就与Hashtable和同步的HashMap一样了。
+
+1.8
+size方法使用CAS
+```
+final long sumCount() {
+        CounterCell[] as = counterCells; CounterCell a;
+        long sum = baseCount;
+        if (as != null) {
+            for (int i = 0; i < as.length; ++i) {
+                if ((a = as[i]) != null)
+                    sum += a.value;
+            }
+        }
+        return sum;
+    }
+```
+会用一个公共变量basecount为总的数量+每个segement的counterCell数量，每个segement的counterCell数量在put之后会重新计算
 
 18. 为什么HashMap是线程不安全的
 没有锁，无法保持原子性，存取操作无法保证正确结果。
@@ -247,6 +398,7 @@ Map map = Collections.synchronizedMap(new HashMap());
 
 20. 多并发情况下HashMap是否还会产生死循环
 JDK8中使用了红黑树node复制节点时将其放在原节点之后，不像之前的链表放在之前，所以不会发生死锁
+baidu到jdk8依旧会死循环
 
 21. TreeMap、HashMap、LinkedHashMap的区别
 HashMap里面存入的键值对在取出的时候是随机的,它根据键的HashCode值存储数据,根据键可以直接获取它的值，具有很快的访问速度。
@@ -262,7 +414,7 @@ Map<String, Object> map = new LinkedHashMap<String, Object>() {
 TreeMap实现SortedMap接口，能够把它保存的记录根据键排序（红黑树顺序，可以自定义），默认是按键值的升序排序，也可以指定排序的比较器，当用Iterator 遍历TreeMap时，得到的记录是排过序的。如果要按自然顺序或自定义顺序遍历键，那么TreeMap会更好。
 Map<String,String> treeMap = new TreeMap<String,String>(new Comparator<String>(){  
     public int compare(String o1, String o2) {  
-        return -o1.compareTo(o2);    
+        return -o1.compareTo(o2);
     }  
 });  
 
@@ -469,6 +621,9 @@ Java中的泛型基本上都是在编译器这个层次来实现的，在生成�
 泛型类并没有自己独有的Class类对象。比如并不存在List<String>.class或是List<Integer>.class，而只有List.class。
 静态变量是被泛型类的所有实例所共享的。对于声明为MyClass<T>的类，访问其中的静态变量的方法仍然是 MyClass.myStaticVar。不管是通过new MyClass<String>还是new MyClass<Integer>创建的对象，都是共享一个静态变量。
 泛型的类型参数不能用在Java异常处理的catch语句中。因为异常处理是由JVM在运行时刻来进行的。由于类型信息被擦除，JVM是无法区分两个异常类型MyException<String>和MyException<Integer>的。对于JVM来说，它们都是 MyException类型的。也就无法执行与异常对应的catch语句。
+
+协变/逆变---》里氏替换原则LSP，extends规定上界，取数据时使用，super规定下界（get），存数据使用（put）
+
 
 34. 解析XML的几种方式的原理与特点：DOM、SAX、JDOM、DOM4J
 XML是一种通用的数据交换格式,它的平台无关性、语言无关性、系统无关性、给数据集成与交互带来了极大的方便。

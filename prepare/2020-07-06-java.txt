@@ -815,7 +815,194 @@ Reactor 模型
 -----------------------------------------------------------------------------------------------------------------------------------
 
 MQ
+
+
+消息队列的使用过程大概如下：
+
+（1）客户端连接到消息队列服务器，打开一个channel。
+（2）客户端声明一个exchange，并设置相关属性。
+（3）客户端声明一个queue，并设置相关属性。
+（4）客户端使用routing key，在exchange和queue之间建立好绑定关系。
+（5）客户端投递消息到exchange。
+
 RabbitMQ
+
+
+
+
+在Rabbit MQ中，无论是生产者发送消息还是消费者接受消息，都首先需要声明一个MessageQueue。这就存在一个问题，是生产者声明还是消费者声明呢？
+首先需要明确：
+
+a)消费者是无法订阅或者获取不存在的MessageQueue中信息。
+
+b)消息被Exchange接受以后，如果没有匹配的Queue，则会被丢弃。
+
+如果是消费者去声明Queue，就有可能会出现在声明Queue之前，生产者已发送的消息被丢弃的隐患。
+如果应用能够通过消息重发的机制允许消息丢失，则使用此方案没有任何问题。
+但是如果不能接受该方案，这就需要无论是生产者还是消费者，在发送或者接受消息前，都需要去尝试建立消息队列。
+这里有一点可以明确，如果客户端尝试建立一个已经存在的消息队列，Rabbit MQ不会做任何事情，并返回客户端建立成功的。
+
+
+队列以下属性:
+
+a) Exclusive：排他队列，如果一个队列被声明为排他队列，该队列仅对首次声明它的连接可见，并在连接断开时自动删除。
+这里需要注意三点：其一，排他队列是基于连接可见的，同一连接的不同信道是可以同时访问同一个连接创建的排他队列的。
+其二，“首次”，如果一个连接已经声明了一个排他队列，其他连接是不允许建立同名的排他队列的，这个与普通队列不同。
+其三，即使该队列是持久化的，一旦连接关闭或者客户端退出，该排他队列都会被自动删除的。
+这种队列适用于只限于一个客户端发送读取消息的应用场景。
+
+b)  Auto-delete:自动删除，如果该队列没有任何订阅的消费者的话，该队列会被自动删除。这种队列适用于临时队列。
+
+c)  Durable:持久化
+
+d)  其他选项，例如如果用户仅仅想查询某一个队列是否已存在，如果不存在，不想建立该队列，仍然可以调用queue.declare，
+只不过需要将参数passive设为true，传给queue.declare，
+如果该队列已存在，则会返回true；
+如果不存在，则会返回Error，但是不会创建新的队列。
+
+ExchangeType和Binding决定了消息的路由规则。所以生产者想要发送消息，首先必须要声明一个Exchange和该Exchange对应的Binding。
+可以通过 ExchangeDeclare和BindingDeclare完成。
+在Rabbit MQ中，声明一个Exchange需要三个参数：ExchangeName，ExchangeType和Durable。
+有三种类型的ExchangeType：direct ，fanout和topic，不同的Exchange会表现出不同路由行为。
+
+生产者在发送消息时，都需要指定一个RoutingKey，当Exchange在接到该RoutingKey以后，会通过ExchangeType判断：
+如果是Direct类型，则会将消息中的RoutingKey与该Exchange关联的所有Binding中的BindingKey进行比较，如果相等，则发送到该Binding对应的Queue中。
+如果是  Fanout  类型，则会将消息发送给所有与该  Exchange  定义过  Binding  的所有  Queues  中去，其实是一种广播行为。
+如果是Topic类型，则会按照正则表达式，对RoutingKey与BindingKey进行匹配，如果匹配成功，则发送到对应的Queue中。
+
+在RabbitMQ中消费者有2种方式获取队列中的消息:
+
+a)  一种是通过basic.consume命令，订阅某一个队列中的消息,channel会自动在处理完上一条消息之后，接收下一条消息。
+（同一个channel消息处理是串行的）。
+除非关闭channel或者取消订阅，否则客户端将会一直接收队列的消息。
+
+b)  另外一种方式是通过basic.get命令主动获取队列中的消息，
+但是绝对不可以通过循环调用basic.get来代替basic.consume，这是因为basic.get RabbitMQ在实际执行的时候，
+是首先consume某一个队列，然后检索第一条消息，然后再取消订阅。
+如果是高吞吐率的消费者，最好还是建议使用basic.consume。
+
+但是这种情况下，如果消费者1处理的消息比较繁重，而消费者2处理的消息比较轻松地话，实际上应该让消费者2多处理一些消息，在消费者代码添加中如下代码：
+如果有多个消费者同时订阅同一个队列的话，RabbitMQ是采用循环的方式分发消息的，每一条消息只能被一个订阅者接收。
+RabbitMQ可以在若干consumer中间实现轮流调度(Round-Robin).
+
+channel.basicQos(1);//阻止rabbitmq将消息平均分配到每一个消费者，会优先的发给不忙的消费者，如果当前的消费者在忙的话，就将消息分配给下一个消费者
+
+RabbitMQ提供了ACK某一个消息的命令，当然也提供了Reject某一个消息的命令。
+当客户端发生错误，调用basic.reject命令拒绝某一个消息时，可以设置一个requeue的属性，
+如果为true，则消息服务器会重传该消息给下一个订阅者；
+如果为false，则会直接删除该消息。当然，也可以通过ack，让消息服务器直接删除该消息并且不会重传。
+
+Rabbit MQ默认是不持久队列
+通过设置Exchange和MessageQueue的durable属性为true，可以使得队列和Exchange持久化，
+但是这还不能使得队列中的消息持久化，这需要生产者在发送消息的时候，将delivery mode设置为2，
+只有这3个全部设置完成后，才能保证服务器重启不会对现有的队列造成影响。
+
+ 持久化的代价就是性能损失,磁盘IO远远慢于RAM(使用SSD会显著提高消息持久化的性能) , 持久化会大大降低RabbitMQ每秒可处理的消息.两者的性能差距可能在10倍以上.
+
+事务，txSelect()-txCommit()-txRollback(),将客户端与消息服务器同步起来，背离了消息队列解耦的本质。
+
+Consumer是直接创建TCP链接到RabbitMQ吗?Channel，无论是要发布消息还是要获取消息 ,
+应用程序都需要通过TCP连接到RabbitMQ.
+应用程序连接并通过权限认证之后就要创建Channel来执行AMQP命令.
+Channel是建立在实际TCP连接之上通信管道,
+这里之所以引入channel的概念而不是直接通过TCP链接直接发送AMQP命令,
+是出于两方面的考虑:建立上成百上千的TCP链接,一方面浪费了TCP链接,
+一方面很快会触及系统瓶颈.引入了Channel之后多个进程与RabbitMQ的通信可以在一条TCP链接上完成.
+
+
+
+mq消息丢失
+
+生产者
+- 网络
+- 代码错误，nack未处理
+- 未绑定队列
+
+`不建议使用事务，使用消息确认机制，单条确认（同步），批量确认（同步），异步确认（加监听器）
+生产者通过调用channel.confirmSelect方法将信道设置为confirm模式，
+一旦信道进入confirm模式，所有在该信道上面发布的消息都会被指派一个唯一的ID（从1开始），
+一旦消息被投递到所有匹配的队列之后，
+RabbitMQ就会发送一个确认（Basic.Ack）给生产者（包含消息的唯一deliveryTag和multiple参数），
+这就使得生产者知晓消息已经正确到达了目的地了。
+
+同步的确认，可能涉及到超时产生的重复发送，经常的丢数据导致反复重发，性能下降
+异步的确认，可能涉及到发送前消息的存储和nack数据的处理
+
+
+未绑定队列的情况设置参数mandatory，
+当mandatory设置为false时，出现上述情形broker会直接将消息扔掉。
+当mandatory标志位设置为true时，
+如果exchange根据自身类型和消息routeKey无法找到一个符合条件的queue，
+那么会调用basic.return方法将消息返回给生产者。
+通过调用channel.addReturnListener来添加ReturnListener监听器实现，
+只要发送的消息，没有路由到具体的队列，ReturnListener就会收到监听消息。
+
+
+RabbitMQ提供了alternate-exchange，备份交换器，
+它可以将未被路由的消息存储在另一个exchange队列中，再在需要的时候去处理这些消息。
+通过webui管理后台设置，当新建一个exchange业务的时候，
+可以给它设置Arguments，这个参数就是 alternate-exchange，
+其实alternate-exchange就是一个普通的exchange，类型最好是fanout 方便管理
+当发送消息到指定的exchange时候，对应key没有路由到queue，就会自动转移到alternate-exchange对应的queue，起码消息不会丢失。
+
+如果备份交换器和mandatory参数一起使用，会导致mandatory参数无效（很好理解）
+`
+
+
+MQ服务
+- 未支持持久化
+- 单节点宕机
+- 集群数据部分不可用（RabbitMQ的特殊集群架构，每个队列绑定在对应节点上，集群中的其他节点只存储元数据，类似索引，只会同步对应的数据）
+- 镜像模式发生意外
+
+`其实就是解决服务的高可用问题HA，镜像集群模式
+镜像模式至少采用3节点：2个磁盘节点和1个内存节点来保证
+
+策略：
+
+同步至所有的，一般不这么做，性能会受到极大影响
+同步最多N个机器
+只同步至符合指定名称的nodes
+
+说明举例：节点1（内存结点）、节点2（磁盘节点）存储所有数据，节点3（磁盘节点）仅存储元数据，保证了节点1宕机，节点2可用，但是都挂了，就服务不可用了
+
+HA 镜像队列有一个很大的缺点就是： 系统的吞吐量会有所下降
+
+所以采用镜像模式，要根据具体的业务规则定制话处理，没那么重要的业务，消息丢了也没关系的场景，又要求必须高的性能的时候，镜像也可以不用设置。
+
+
+
+`
+
+消费者
+- 宕机
+- 代码错误消费ack后未处理
+
+`默认使用了自动ack，可以切换为手动ack，
+这样消费者没处理完消息不会发送ack,
+如果在消费者拿到消息，没来得及处理的情况下自己挂了，
+此时MQ集群会自动感知到，它就会自觉的重发消息给其他的消费者服务实例。`
+this.channel.basicConsume(queue, false, consumerTag, this);
+第二个参数设置 false 代表不自动ack
+public static void ack(MessageContext context) {
+        long deliveryTag = context.getEnvelope().getDeliveryTag();
+        try {
+            context.getChannel().basicAck(deliveryTag, false);// 手动ACK
+        } catch (IOException e) {
+            throw new MqAckException("消息ack出错：连接异常或远端关闭", context, e);
+        }
+    }
+
+ Confirm机制，无法进行回滚，就是一旦服务器崩溃，生产者无法得到Confirm信息,建议数据支持去重，或者消息幂等性。
+
+
+
+
+
+ 消息由两部分组成:  payload and  label. "payload"是实际要传输的数据,至于数据的格式RabbitMQ并不关心,"label"描述payload,包括exchange name 和可选的topic tag.消息一旦到了consumer那里就只有payload部分了,label部分并没有带过来.RabbitMQ并不告诉你消息是谁发出的.这好比你收到一封信但是信封上是空白的.当然想知道是谁发的还是有办法的,在消息内容中包含发送者的信息就可以了.
+
+
+
 Kafaka
 
 事务性MQ RocketMQ
@@ -830,9 +1017,9 @@ Redis
 
 结构 string 结构 {len、space、数组}
 
-雪崩 大面积缓存正好全面消失
-击穿 持续请求，缓存某个时刻正好消失
-穿透 缓存没有值
+雪崩 大面积缓存Key正好全面消失：缓存时间随机值
+击穿 持续请求，某个Key缓存某个时刻正好消失：重新加载数据时加锁；物理不过期
+穿透 访问某个一定没有值的缓存Key：缓存空值；布隆过滤器
 
 > 跳跃表
 
