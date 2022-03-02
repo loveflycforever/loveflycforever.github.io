@@ -1,0 +1,17 @@
+分模块注意点
+
+各个模块的package为jar
+主pom为pom
+启动模块添加maven 打包插件
+
+
+解决mabitis分散mapper的问题
+
+
+classpath*:mybatis/mapper/**/*Mapper.xml
+
+
+mapper扫描问题
+@MapperScan(basePackages = {"com.cupshe.dc.plutus.mapper", "com.cupshe.dc.plutus.**.repository"})
+
+

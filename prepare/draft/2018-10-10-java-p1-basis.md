@@ -426,7 +426,7 @@ Collection 单列集合
  │  └ Vector 线程安全，但速度慢，已被ArrayList替代。底层数据结构是数组结构。
  │  　 └Stack
  └ Set
-    ├ HashSet 线程不安全，存取速度快。依赖元素的hashCode方法和euqals方法保证元素唯一性。
+    ├ HashSet 线程不安全，存取速度快。依赖元素的hashCode方法和equals方法保证元素唯一性。
     │  └ LinkedHashSet
     └ TreeSet 线程不安全，可以对Set集合中的元素进行排序。通过compareTo或者compare方法中的来保证元素的唯一性。元素是以二叉树的形式存放的。
   
@@ -434,14 +434,13 @@ Map 双列集合
 ├HashTable 线程安全，速度快。底层是哈希表数据结构。是同步的。不允许null作为键或者值。
 │├ Properties 用于配置文件的定义和操作，使用频率非常高，同时键和值都是字符串。是集合中可以和IO技术相结合的对象。
 ├HashMap 线程不安全，速度慢。底层也是哈希表数据结构。是不同步的。允许null作为键或者值。替代了HashTable.
-│├ LinkedHashMap 可以保证HashMap集合有序。存入的顺序和取出的顺序一致。
-│└  
+│└ LinkedHashMap 可以保证HashMap集合有序。存入的顺序和取出的顺序一致。
 ├ TreeMap 可以用来对Map集合中的键进行排序。
 └ IdentifyHashMap
 
-Collection是集合类的上级接口，子接口主要有Set 和List、Map。
+Collection是集合类的上级接口，子接口主要有Set和List、Map。
 boolean add(E e)
-boolean addAll(Collection<? extendsE> c)
+boolean addAll(Collection<? extends E> c)
 void clear()
 boolean contains(Object o)
 boolean equals(Object o)
@@ -454,10 +453,11 @@ boolean retainAll(Collection<?>c)
 int size()
 Object[] toArray()
 <T>T[] toArray(T[] a)
+
 Collections是针对集合类的一个帮助类，提供了操作集合的工具方法：一系列静态方法实现对各种集合的搜索、排序、线程安全化等操作。 
 
 23. try-catch-finally，try里有return，finally还执行么
-在finally里面是不能执行return语句的，如果在finally中使用了return，则会提示这样的错误：“控制不能离开 finally子句主体”。
+在finally里面是不能执行return语句的，如果在finally中使用了return，则会提示这样的错误：“控制不能离开 finally 子句主体”。
 
 24. Exception与Error包结构，OOM你遇到过哪些情况，SOF你遇到过哪些情况
 Throwable
@@ -505,12 +505,12 @@ Java 的方法调用有两类，动态方法调用与静态方法调用。
 静态方法调用是指对于类的静态方法的调用方式，是静态绑定的；
 动态方法调用需要有方法调用所作用的对象，是动态绑定的。
 类调用 (invokestatic) 是在编译时刻就已经确定好具体调用方法的情况，
-实例调用 (invokevirtual) 则是在调用的时候才确定具体的调用方法，这就是动态绑定，也是多态要解决的核心问题。
+实例调用 (invokevirtual) 则是在调用的时候才确定具体地调用方法，这就是动态绑定，也是多态要解决的核心问题。
 JVM 的方法调用指令有四个，分别是 invokestatic，invokespecial，invokesvirtual 和 invokeinterface。前两个是静态绑定，后两个是动态绑定的。
 
 30. foreach与正常for循环效率对比
 需要循环数组结构的数据时，建议使用普通for循环，因为for循环采用下标访问，对于数组结构的数据来说，采用下标访问比较好。
-需要循环链表结构的数据时，一定不要使用普通for循环，这种做法很糟糕，数据量大的时候有可能会导致系统崩溃。
+需要循环链表结构的数据时，一定不要使用普通for循环，这种做法很糟糕，数据量大地时候有可能会导致系统崩溃。
 原因：foreach使用的是迭代器
 结论：可以下标访问时，使用for，不能下标访问，需要指针访问时，使用foreach。
   
